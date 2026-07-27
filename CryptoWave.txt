@@ -1,47 +1,115 @@
-=== CryptoWave — Complete Rebuild Prompt ===
+=== CryptoWave — Complete Rebuild Prompt (Updated Version) ===
 
 Build a pixel-perfect single-page dark landing site titled
 "CryptoWave — Decentralized Future Cryptocurrency Assets".
 
-STACK (required, do NOT substitute):
-- TanStack Start v1 (React 19, Vite 7, TypeScript, Tailwind v4)
-- Add dependency: framer-motion@^12
-- No shadcn/ui components are used by the app (safe to omit /components/ui)
-- All media loads from remote URLs at https://qclay.design/lovable/crypto/
-  (do NOT copy media into /public or /src/assets — every image URL is already
-  hard-coded to that host in the source files below)
+STACK & ARCHITECTURE:
+- Framework: TanStack Start (React 19, Vite 8, TypeScript)
+- Routing: TanStack Router (File-based type-safe routing)
+- Data Fetching: TanStack Query v5 (QueryClient Context & Provider)
+- Animations: Framer Motion v12 (Spring physics, 3D card deck, entrance motion)
+- Design Tokens: CSS Modules + tokens.css (Fluid clamp sizing, glassmorphism, HSL color tokens)
+- Remote Assets: https://qclay.design/lovable/crypto/
 
-DEPENDENCIES to install: react, react-dom, @tanstack/react-router,
-@tanstack/react-start, framer-motion, tailwindcss@^4, @tailwindcss/vite,
-clsx, tailwind-merge.
+DEPENDENCIES:
+react, react-dom, @tanstack/react-router, @tanstack/react-start, @tanstack/react-query,
+framer-motion, tailwindcss@^4, @tailwindcss/vite, clsx, tailwind-merge.
 
-INSTRUCTIONS:
-1. Bootstrap the default TanStack Start template (React 19 + Vite 7 + Tailwind v4).
-2. Add "framer-motion" to dependencies.
-3. Create every file listed below with the EXACT contents shown between the
-   BEGIN/END markers. Paths are project-root relative. Overwrite defaults
-   (src/App.tsx, src/routes/index.tsx, src/routes/__root.tsx, src/styles.css)
-   with the versions here.
-4. Do not modify src/router.tsx, src/start.ts, or src/server.ts if your
-   template already provides them — the versions below are the exact ones
-   used and can be used as reference.
-5. No public/ SVGs, no local images. Everything renders via absolute URLs.
+KEY FEATURES IMPLEMENTED:
+1. Top Navigation: Single Menu Pill dropdown ('[02] Menu ▼') positioned directly next to the logo on the left, routing seamlessly to '#top', '#digital-assets', '#create-wallet', '#fiat-exchange', and '#security'.
+2. Powerful Web3 Experiences 3D Card Stack: Interactive card deck ('Web3CardStack') with spring physics transitions, previewing Instant Cross-Chain Swaps, Self-Custodial Multi-Sig Vaults, and Integrated dApps.
+3. Interactive Modal & Toast Suite:
+   - WalletConnectModal: Connect to MetaMask, Phantom, WalletConnect, or Coinbase Wallet.
+   - SwapModal: Multi-token real-time rate calculator (BTC, ETH, SOL, USDT) and swap simulator.
+   - SecurityAuditModal: Contract verification, ZK-shield checks, and progress audit scanner.
+   - DAppBrowserModal: Verified dApp directory with category filtering (DeFi, NFTs, Staking).
+   - ToastNotification: Reactive action feedback.
+4. Dark Glassmorphic Footer: Comprehensive footer with platform directories, newsletter subscription, and scroll-to-top action.
 
-Below: every file, verbatim.
-
+Below: every source file in src/, verbatim.
 
 ----- BEGIN FILE: src/App.tsx -----
-import { FinalSection } from "./components/FinalSection/FinalSection";
+import { useState } from "react";
 import { HeroFeatureSection } from "./components/HeroFeatureSection/HeroFeatureSection";
 import { OrbitSection } from "./components/OrbitSection/OrbitSection";
+import { FinalSection } from "./components/FinalSection/FinalSection";
+import Footer from "./components/Footer";
+import { WalletConnectModal } from "./components/common/Modals/WalletConnectModal";
+import { SwapModal } from "./components/common/Modals/SwapModal";
+import { SecurityAuditModal } from "./components/common/Modals/SecurityAuditModal";
+import { DAppBrowserModal } from "./components/common/Modals/DAppBrowserModal";
+import { ToastNotification } from "./components/common/ToastNotification";
 
 function App() {
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+  const [swapModalOpen, setSwapModalOpen] = useState(false);
+  const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [dappsModalOpen, setDappsModalOpen] = useState(false);
+  const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 4000);
+  };
+
+  const handleConnectWallet = (name: string, address: string) => {
+    setConnectedAddress(address);
+    showToast(`Connected to ${name} (${address})`);
+  };
+
   return (
-    <main>
-      <HeroFeatureSection />
-      <OrbitSection />
-      <FinalSection />
-    </main>
+    <div>
+      <main>
+        <HeroFeatureSection
+          onOpenWalletModal={() => setWalletModalOpen(true)}
+          connectedAddress={connectedAddress}
+          onOpenSwapModal={() => setSwapModalOpen(true)}
+          onOpenAuditModal={() => setAuditModalOpen(true)}
+          onOpenDAppsModal={() => setDappsModalOpen(true)}
+        />
+        <OrbitSection />
+        <FinalSection
+          onOpenSwapModal={() => setSwapModalOpen(true)}
+          onOpenAuditModal={() => setAuditModalOpen(true)}
+          onOpenDAppsModal={() => setDappsModalOpen(true)}
+        />
+      </main>
+
+      <Footer onSubscribe={(email) => showToast(`Subscribed ${email} to CryptoWave Alpha`)} />
+
+      {/* Interactive Modals */}
+      <WalletConnectModal
+        isOpen={walletModalOpen}
+        onClose={() => setWalletModalOpen(false)}
+        onConnect={handleConnectWallet}
+      />
+
+      <SwapModal
+        isOpen={swapModalOpen}
+        onClose={() => setSwapModalOpen(false)}
+        onSuccess={(msg) => showToast(msg)}
+      />
+
+      <SecurityAuditModal
+        isOpen={auditModalOpen}
+        onClose={() => setAuditModalOpen(false)}
+      />
+
+      <DAppBrowserModal
+        isOpen={dappsModalOpen}
+        onClose={() => setDappsModalOpen(false)}
+        onLaunch={(name) => showToast(`Launched ${name} in Sandbox`)}
+      />
+
+      {/* Toast Notification */}
+      <ToastNotification
+        message={toastMessage}
+        onClose={() => setToastMessage(null)}
+      />
+    </div>
   );
 }
 
@@ -342,13 +410,14 @@ export function FloatingIcons() {
 ----- END FILE: src/components/FeatureSection/PromoCard.module.css -----
 
 ----- BEGIN FILE: src/components/FeatureSection/PromoCard.tsx -----
+import { useState } from "react";
 import { motion } from "framer-motion";
-const avatarUrl = "https://qclay.design/lovable/crypto/avatar.png";
 import { ChevronRightIcon, GrayBitcoinIcon, LightningLogoMark } from "../icons";
 import { Reveal } from "../common/motion";
 import { TextScramble } from "../common/TextScramble";
 import { SIGNATURE_EASE } from "../common/motionConfig";
 import { SquiggleConnectorIcon } from "./SquiggleConnectorIcon";
+import { Web3CardStack } from "./Web3CardStack";
 import styles from "./PromoCard.module.css";
 
 const footerReveal = {
@@ -358,7 +427,25 @@ const footerReveal = {
   transition: { duration: 0.5, delay: 0.75, ease: SIGNATURE_EASE },
 };
 
-export function PromoCard() {
+interface PromoCardProps {
+  onOpenSwap?: () => void;
+  onOpenAudit?: () => void;
+  onOpenDApps?: () => void;
+}
+
+export function PromoCard({ onOpenSwap, onOpenAudit, onOpenDApps }: PromoCardProps) {
+  const [activeStackIndex, setActiveStackIndex] = useState(0);
+
+  const handleNextStack = () => {
+    setActiveStackIndex((prev) => (prev + 1) % 3);
+  };
+
+  const handleActionClick = (cardId: string) => {
+    if (cardId === "swap" && onOpenSwap) onOpenSwap();
+    else if (cardId === "vault" && onOpenAudit) onOpenAudit();
+    else if (cardId === "dapps" && onOpenDApps) onOpenDApps();
+  };
+
   return (
     <motion.div
       className={styles.root}
@@ -382,30 +469,45 @@ export function PromoCard() {
         <p className={styles.lede}>Leading self-custody multi-chain platform assets</p>
       </Reveal>
 
+      {/* Interactive 3D Card Stack */}
+      <Reveal variant="fade-up" duration={0.5} delay={0.6}>
+        <Web3CardStack
+          activeIndex={activeStackIndex}
+          onSelectIndex={(idx) => setActiveStackIndex(idx)}
+          onActionClick={handleActionClick}
+        />
+      </Reveal>
+
+      {/* Progress Bar Segments */}
       <Reveal variant="fade-up" duration={0.5} delay={0.65}>
-        <div className={styles.progress} role="presentation">
-          <span className={`${styles.progressSegment} ${styles.progressActive}`} />
-          <span className={styles.progressSegment} />
-          <span className={styles.progressSegment} />
+        <div className={styles.progress} role="tablist" aria-label="Feature card pagination">
+          {[0, 1, 2].map((idx) => (
+            <button
+              key={idx}
+              type="button"
+              role="tab"
+              aria-selected={activeStackIndex === idx}
+              onClick={() => setActiveStackIndex(idx)}
+              className={`${styles.progressSegment} ${activeStackIndex === idx ? styles.progressActive : ""}`}
+              style={{ cursor: "pointer", border: "none", outline: "none" }}
+            />
+          ))}
         </div>
       </Reveal>
 
+      {/* Footer Navigation */}
       <motion.div className={styles.footer} {...footerReveal}>
         <div className={styles.chain}>
-          <img
-            className={styles.avatar}
-            src={avatarUrl}
-            width={54}
-            height={54}
-            alt="Connected account avatar"
-            loading="lazy"
-            decoding="async"
-          />
           <SquiggleConnectorIcon className={styles.squiggle} />
           <LightningLogoMark size={42} />
         </div>
 
-        <button type="button" className={styles.next} aria-label="Next">
+        <button
+          type="button"
+          className={styles.next}
+          aria-label="Next feature card"
+          onClick={handleNextStack}
+        >
           <ChevronRightIcon size={16} />
         </button>
       </motion.div>
@@ -444,6 +546,255 @@ export function SquiggleConnectorIcon({ width = 34, height = 20, className }: Ic
 }
 
 ----- END FILE: src/components/FeatureSection/SquiggleConnectorIcon.tsx -----
+
+----- BEGIN FILE: src/components/FeatureSection/Web3CardStack.module.css -----
+.container {
+  position: relative;
+  width: 100%;
+  margin-top: clamp(16px, 2vw, 24px);
+  min-height: 210px;
+}
+
+.stackWrapper {
+  position: relative;
+  width: 100%;
+  height: 210px;
+}
+
+.card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: clamp(16px, 2vw, 22px);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
+}
+
+.cardActive {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-panel);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cardTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.cardTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.cardSubtitle {
+  margin: 0 0 14px 0;
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-normal);
+  color: var(--color-text-secondary);
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  background: var(--color-surface-1);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.badgeGold {
+  background: var(--color-surface-2);
+  color: var(--color-gold);
+  border-color: var(--color-border-default);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.actionBtn:hover {
+  transform: translateY(-1px);
+}
+
+----- END FILE: src/components/FeatureSection/Web3CardStack.module.css -----
+
+----- BEGIN FILE: src/components/FeatureSection/Web3CardStack.tsx -----
+import { motion } from "framer-motion";
+import { BitcoinIcon, SafeBrowserIcon, CubeIcon } from "../icons";
+import styles from "./Web3CardStack.module.css";
+
+export interface StackCardItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  iconBg: string;
+  badges: string[];
+  actionLabel: string;
+}
+
+export const STACK_CARDS: StackCardItem[] = [
+  {
+    id: "swap",
+    title: "Instant Cross-Chain Swaps",
+    subtitle: "Swap 1,000+ assets across Bitcoin, Solana, Ethereum & Polygon with zero price slippage.",
+    icon: <BitcoinIcon size={20} />,
+    iconBg: "var(--gradient-accent-diagonal)",
+    badges: ["0.05% Fee", "15+ Chains", "Instant"],
+    actionLabel: "Launch Swap",
+  },
+  {
+    id: "vault",
+    title: "Self-Custodial Multi-Sig Vault",
+    subtitle: "AES-256 cloud key recovery with biometric passkey & hardware security authorization.",
+    icon: <SafeBrowserIcon size={20} />,
+    iconBg: "var(--gradient-accent-diagonal)",
+    badges: ["AES-256", "Multi-Sig", "0 Gas"],
+    actionLabel: "Security Audit",
+  },
+  {
+    id: "dapps",
+    title: "Integrated Web3 dApps",
+    subtitle: "1-tap connection to top audited liquidity pools, NFTs, and decentralized governance DAOs.",
+    icon: <CubeIcon size={20} />,
+    iconBg: "var(--gradient-accent-diagonal)",
+    badges: ["DeFi", "NFTs", "1-Click"],
+    actionLabel: "Explore dApps",
+  },
+];
+
+interface Web3CardStackProps {
+  activeIndex: number;
+  onSelectIndex: (index: number) => void;
+  onActionClick: (cardId: string) => void;
+}
+
+export function Web3CardStack({ activeIndex, onSelectIndex, onActionClick }: Web3CardStackProps) {
+  return (
+    <div className={styles.container}>
+      <div className={styles.stackWrapper}>
+        {STACK_CARDS.map((card, index) => {
+          const offset = (index - activeIndex + STACK_CARDS.length) % STACK_CARDS.length;
+          const isActive = offset === 0;
+
+          const translateY = offset * 14;
+          const scale = 1 - offset * 0.05;
+          const zIndex = STACK_CARDS.length - offset;
+          const opacity = offset === 0 ? 1 : offset === 1 ? 0.75 : 0.45;
+
+          return (
+            <motion.div
+              key={card.id}
+              className={`${styles.card} ${isActive ? styles.cardActive : ""}`}
+              style={{ zIndex }}
+              initial={false}
+              animate={{
+                y: translateY,
+                scale: scale,
+                opacity: opacity,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 26,
+              }}
+              onClick={() => onSelectIndex(index)}
+            >
+              <div className={styles.cardHeader}>
+                <div className={styles.cardTitleWrap}>
+                  <div className={styles.cardIcon} style={{ background: card.iconBg, color: "var(--color-text-on-accent)" }}>
+                    {card.icon}
+                  </div>
+                  <h4 className={styles.cardTitle}>{card.title}</h4>
+                </div>
+
+                {isActive && (
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    className={styles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onActionClick(card.id);
+                    }}
+                  >
+                    <span>{card.actionLabel}</span>
+                    <span>&rarr;</span>
+                  </motion.button>
+                )}
+              </div>
+
+              <p className={styles.cardSubtitle}>{card.subtitle}</p>
+
+              <div className={styles.badgeRow}>
+                {card.badges.map((badge, bIdx) => (
+                  <span
+                    key={badge}
+                    className={`${styles.badge} ${bIdx === 0 ? styles.badgeGold : ""}`}
+                  >
+                    {badge}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+----- END FILE: src/components/FeatureSection/Web3CardStack.tsx -----
 
 ----- BEGIN FILE: src/components/FinalSection/BinanceDexIcon.tsx -----
 interface IconProps {
@@ -609,20 +960,26 @@ import { OrbitNavButton } from "../OrbitSection/OrbitNavButton";
 import { SIGNATURE_EASE } from "../common/motionConfig";
 import styles from "./DAppsCard.module.css";
 
-export function DAppsCard() {
+interface DAppsCardProps {
+  onOpenDApps?: () => void;
+}
+
+export function DAppsCard({ onOpenDApps }: DAppsCardProps) {
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 0.1 }}
+      onClick={onOpenDApps}
+      style={{ cursor: "pointer" }}
     >
-      <OrbitNavButton direction="prev" className={styles.edgeNav} />
+      <OrbitNavButton direction="prev" className={styles.edgeNav} onClick={onOpenDApps} />
 
       <div className={styles.header}>
         <h3 className={styles.heading}>DApps</h3>
-        <span className={styles.badge}>Coming Soon</span>
       </div>
 
       <p className={styles.lede}>Take control of your crypto assets fast and secure</p>
@@ -1016,7 +1373,17 @@ import { SecurityCard } from "./SecurityCard";
 import { SwapCard } from "./SwapCard";
 import styles from "./FinalSection.module.css";
 
-export function FinalSection() {
+interface FinalSectionProps {
+  onOpenSwapModal?: () => void;
+  onOpenAuditModal?: () => void;
+  onOpenDAppsModal?: () => void;
+}
+
+export function FinalSection({
+  onOpenSwapModal,
+  onOpenAuditModal,
+  onOpenDAppsModal,
+}: FinalSectionProps) {
   return (
     <section className={styles.section} id="fiat-exchange">
       <div className={styles.container}>
@@ -1026,10 +1393,10 @@ export function FinalSection() {
           </div>
 
           <div className={styles.cardColumn}>
-            <SecurityCard />
+            <SecurityCard onOpenAudit={onOpenAuditModal} />
             <div className={styles.subGrid}>
-              <DAppsCard />
-              <SwapCard />
+              <DAppsCard onOpenDApps={onOpenDAppsModal} />
+              <SwapCard onOpenSwap={onOpenSwapModal} />
               <div className={styles.gradientOrange}></div>
               <div className={styles.gradientBlue}></div>
             </div>
@@ -1577,21 +1944,27 @@ import { SecurityWaveBadgeIcon } from "./SecurityWaveBadgeIcon";
 import { WaveRings } from "./WaveRings";
 import styles from "./SecurityCard.module.css";
 
-export function SecurityCard() {
+interface SecurityCardProps {
+  onOpenAudit?: () => void;
+}
+
+export function SecurityCard({ onOpenAudit }: SecurityCardProps) {
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -4, scale: 1.01 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: SIGNATURE_EASE }}
+      id="security"
     >
-      <OrbitNavButton direction="next" className={styles.edgeNav} />
+      <OrbitNavButton direction="next" className={styles.edgeNav} onClick={onOpenAudit} />
 
       <div className={styles.surface}>
         <WaveRings className={styles.waveRings} />
 
-        <div className={styles.waveBadgeCol}>
+        <div className={styles.waveBadgeCol} onClick={onOpenAudit} style={{ cursor: "pointer" }}>
           <span className={styles.waveBadgeWrap}>
             <SecurityWaveBadgeIcon size={82} className={styles.waveBadge} />
           </span>
@@ -1609,7 +1982,6 @@ export function SecurityCard() {
 
         <div className={styles.deployFeed}>
           <div className={styles.deployCard}>
-            {/* Cursor + Try Now button start near headline, glide to center, hang 0.5s, then land on DeployCard */}
             <motion.div
               className={styles.tryNowWrap}
               initial={{ opacity: 0, x: -280, y: -110, scale: 0.85 }}
@@ -1623,23 +1995,28 @@ export function SecurityCard() {
               transition={{ duration: 1.75, times: [0, 0.35, 0.63, 1], delay: 0.3, ease: "easeInOut" }}
             >
               <YellowCursorIcon size={16} className={styles.tryNowCursor} />
-              <button type="button" className={styles.tryNow}>
+              <button
+                type="button"
+                className={styles.tryNow}
+                onClick={onOpenAudit}
+                style={{ cursor: "pointer" }}
+              >
                 Try Now
               </button>
             </motion.div>
 
             <div className={styles.deployMeta}>
               <span className={styles.deployRepo}>
-                vercel-site/<strong>jvjb4ynna</strong>
+                cryptowave/<strong>vault-v3</strong>
               </span>
               <span className={styles.deployTime}>1d ago</span>
             </div>
             <div className={styles.deployBody}>
               <span className={styles.deployCommit}>
                 <CommitDotIcon className={styles.commitIcon} />
-                ba5f5ff Update bento box design
+                ba5f5ff AES-256 Cloud Encryption Audit
               </span>
-              <ProgressRing value={90} size={30} />
+              <ProgressRing value={100} size={30} />
             </div>
           </div>
 
@@ -1651,22 +2028,22 @@ export function SecurityCard() {
           <div className={`${styles.deployCard} ${styles.deployCardSecond}`}>
             <div className={styles.deployMeta}>
               <span className={styles.deployRepo}>
-                vercel-site/<strong>gigj178vp</strong>
+                cryptowave/<strong>multi-sig</strong>
               </span>
               <span className={styles.deployTime}>10m ago</span>
             </div>
             <div className={styles.deployBodyEnd}>
-              <ProgressRing value={55} size={30} />
+              <ProgressRing value={95} size={30} />
             </div>
           </div>
         </div>
 
         <div className={styles.footer}>
-          <button type="button" className={styles.footerBtn}>
+          <button type="button" className={styles.footerBtn} onClick={onOpenAudit}>
             <CommunityIcon size={18} className={styles.footerBtnIcon} />
-            Create community
+            Run Security Audit
           </button>
-          <button type="button" className={styles.footerBtn}>
+          <button type="button" className={styles.footerBtn} onClick={onOpenAudit}>
             <SafeBrowserIcon size={18} className={styles.footerBtnIcon} />
             Safe Browser
           </button>
@@ -1903,18 +2280,33 @@ const bottomRow: SwapIcon[] = [
   { src: `${base}/ripple-x.svg`, alt: "Ripple", size: "md" },
 ];
 
-export function SwapCard() {
+interface SwapCardProps {
+  onOpenSwap?: () => void;
+}
+
+export function SwapCard({ onOpenSwap }: SwapCardProps) {
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 0.2 }}
+      onClick={onOpenSwap}
+      style={{ cursor: "pointer" }}
     >
       <div className={styles.header}>
         <h3 className={styles.heading}>Buy, sell, and Swap</h3>
-        <button type="button" className={styles.cursorBtn} aria-label="Cursor">
+        <button
+          type="button"
+          className={styles.cursorBtn}
+          aria-label="Launch Swap"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onOpenSwap) onOpenSwap();
+          }}
+        >
           <CursorIcon size={16} />
         </button>
       </div>
@@ -1927,6 +2319,7 @@ export function SwapCard() {
               className={`${styles.iconWrap} ${styles[`iconWrap${icon.size === "sm" ? "Sm" : icon.size === "lg" ? "Lg" : "Md"}`]}`}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.25, rotate: 12 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, ease: SIGNATURE_EASE, delay: 0.9 + index * 0.08 }}
             >
@@ -1944,6 +2337,7 @@ export function SwapCard() {
                 className={`${styles.iconWrap} ${isOuter ? styles.iconWrapBottomOuter : styles.iconWrapBottomMid}`}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.25, rotate: -12 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, ease: SIGNATURE_EASE, delay: 1.3 + index * 0.08 }}
               >
@@ -2063,6 +2457,448 @@ export function WaveRings({ className }: WaveRingsProps) {
   );
 }
 ----- END FILE: src/components/FinalSection/WaveRings.tsx -----
+
+----- BEGIN FILE: src/components/Footer.module.css -----
+.root {
+  position: relative;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-panel);
+  padding-top: clamp(48px, 5vw, 80px);
+  padding-bottom: clamp(36px, 4vw, 56px);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(246, 176, 60, 0.06) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+}
+
+.container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(32px, 4vw, 56px);
+  margin-bottom: clamp(40px, 4vw, 64px);
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.brandTitle {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.brandDesc {
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-normal);
+  color: var(--color-text-secondary);
+  margin-bottom: 20px;
+  max-width: 32ch;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-default);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-gold);
+  font-weight: 500;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  box-shadow: 0 0 8px var(--color-gold);
+}
+
+.colHeading {
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  margin-bottom: 18px;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linkItem {
+  font-size: var(--fs-body-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.linkItem:hover {
+  color: var(--color-text-primary);
+}
+
+.newsletterDesc {
+  font-size: var(--fs-body-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+  line-height: var(--lh-normal);
+}
+
+.subscribeForm {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.inputGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.emailInput {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-sm);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.emailInput:focus {
+  border-color: var(--color-gold);
+}
+
+.subscribeBtn {
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  border: none;
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-button);
+  cursor: pointer;
+}
+
+.subscribedNotice {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-gold);
+  margin-top: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin-bottom: 28px;
+}
+
+.bottomBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: var(--fs-caption);
+  color: var(--color-text-tertiary);
+}
+
+.legalLinks {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.legalLink {
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.legalLink:hover {
+  color: var(--color-text-secondary);
+}
+
+.scrollTopBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 12px;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.scrollTopBtn:hover {
+  background: var(--color-surface-3);
+}
+
+----- END FILE: src/components/Footer.module.css -----
+
+----- BEGIN FILE: src/components/Footer.tsx -----
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { LogoMark } from "./icons";
+import styles from "./Footer.module.css";
+
+interface FooterProps {
+  onSubscribe?: (email: string) => void;
+}
+
+export default function Footer({ onSubscribe }: FooterProps) {
+  const year = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubscribed(true);
+    if (onSubscribe) onSubscribe(email);
+    setTimeout(() => {
+      setEmail("");
+    }, 2500);
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  return (
+    <footer className={styles.root}>
+      <div className={styles.glow} />
+
+      <div className={styles.container}>
+        <div className={styles.grid}>
+          {/* Brand Column */}
+          <div className={styles.brandCol}>
+            <a href="#top" className={styles.brandLogo}>
+              <LogoMark size={38} />
+              <span className={styles.brandTitle}>CryptoWave</span>
+            </a>
+            <p className={styles.brandDesc}>
+              Leading decentralized self-custody platform. Empowering instant cross-chain swaps, encrypted cloud vaults, and Web3 ecosystem access.
+            </p>
+          </div>
+
+          {/* Platform Directory */}
+          <div>
+            <h4 className={styles.colHeading}>Platform</h4>
+            <ul className={styles.linkList}>
+              <li><a href="#top" className={styles.linkItem}>Home Overview</a></li>
+              <li><a href="#digital-assets" className={styles.linkItem}>Digital Assets</a></li>
+              <li><a href="#create-wallet" className={styles.linkItem}>Create Wallet</a></li>
+              <li><a href="#fiat-exchange" className={styles.linkItem}>Cross-Chain Swap</a></li>
+              <li><a href="#security" className={styles.linkItem}>Smart Contract Audits</a></li>
+            </ul>
+          </div>
+
+          {/* Developers & Governance */}
+          <div>
+            <h4 className={styles.colHeading}>Resources</h4>
+            <ul className={styles.linkList}>
+              <li><a href="https://github.com/HarryMofoka/CryptoWave" target="_blank" rel="noreferrer" className={styles.linkItem}>Developer SDK & APIs</a></li>
+              <li><a href="#security" className={styles.linkItem}>AES-256 Vault Backup</a></li>
+              <li><a href="#security" className={styles.linkItem}>Security Bug Bounty</a></li>
+              <li><a href="#top" className={styles.linkItem}>Protocol Documentation</a></li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h4 className={styles.colHeading}>Stay Informed</h4>
+            <p className={styles.newsletterDesc}>
+              Subscribe to weekly Web3 market analysis and protocol releases.
+            </p>
+
+            <form onSubmit={handleSubmit} className={styles.subscribeForm}>
+              <div className={styles.inputGroup}>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={styles.emailInput}
+                />
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  className={styles.subscribeBtn}
+                >
+                  Join
+                </motion.button>
+              </div>
+              {subscribed && (
+                <span className={styles.subscribedNotice}>
+                  ✓ Subscribed to CryptoWave Alpha
+                </span>
+              )}
+            </form>
+          </div>
+        </div>
+
+        <div className={styles.divider} />
+
+        {/* Bottom Bar */}
+        <div className={styles.bottomBar}>
+          <div>
+            &copy; {year} CryptoWave. Self-Custody Multi-Chain Platform. All rights reserved.
+          </div>
+
+          <div className={styles.legalLinks}>
+            <a href="#privacy" className={styles.legalLink}>Privacy Policy</a>
+            <a href="#terms" className={styles.legalLink}>Terms of Service</a>
+            <a href="#security" className={styles.legalLink}>Security Disclosure</a>
+
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.1, y: -2 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={scrollToTop}
+              aria-label="Scroll to top"
+              className={styles.scrollTopBtn}
+            >
+              ↑
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+----- END FILE: src/components/Footer.tsx -----
+
+----- BEGIN FILE: src/components/Header.tsx -----
+import { Link } from '@tanstack/react-router'
+import ThemeToggle from './ThemeToggle'
+
+export default function Header() {
+  return (
+    <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
+      <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
+        <h2 className="m-0 flex-shrink-0 text-base font-semibold tracking-tight">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm text-[var(--sea-ink)] no-underline shadow-[0_8px_24px_rgba(30,90,72,0.08)] sm:px-4 sm:py-2"
+          >
+            <span className="h-2 w-2 rounded-full bg-[linear-gradient(90deg,#56c6be,#7ed3bf)]" />
+            TanStack Start
+          </Link>
+        </h2>
+
+        <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-none sm:w-auto sm:flex-nowrap sm:pb-0">
+          <Link
+            to="/"
+            className="nav-link"
+            activeProps={{ className: 'nav-link is-active' }}
+          >
+            Home
+          </Link>
+          <Link
+            to="/about"
+            className="nav-link"
+            activeProps={{ className: 'nav-link is-active' }}
+          >
+            About
+          </Link>
+          <a
+            href="https://tanstack.com/start/latest/docs/framework/react/overview"
+            className="nav-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Docs
+          </a>
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+          <a
+            href="https://x.com/tan_stack"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
+          >
+            <span className="sr-only">Follow TanStack on X</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
+              <path
+                fill="currentColor"
+                d="M12.6 1h2.2L10 6.48 15.64 15h-4.41L7.78 9.82 3.23 15H1l5.14-5.84L.72 1h4.52l3.12 4.73L12.6 1zm-.77 12.67h1.22L4.57 2.26H3.26l8.57 11.41z"
+              />
+            </svg>
+          </a>
+          <a
+            href="https://github.com/TanStack"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden rounded-xl p-2 text-[var(--sea-ink-soft)] transition hover:bg-[var(--link-bg-hover)] hover:text-[var(--sea-ink)] sm:block"
+          >
+            <span className="sr-only">Go to TanStack GitHub</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true" width="24" height="24">
+              <path
+                fill="currentColor"
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+              />
+            </svg>
+          </a>
+
+          <ThemeToggle />
+        </div>
+      </nav>
+    </header>
+  )
+}
+
+----- END FILE: src/components/Header.tsx -----
 
 ----- BEGIN FILE: src/components/HeroFeatureSection/HeroFeatureSection.module.css -----
 .section {
@@ -2257,63 +3093,81 @@ import { PromoCard } from "../FeatureSection/PromoCard";
 const stars = "https://qclay.design/lovable/crypto/1.png";
 import styles from "./HeroFeatureSection.module.css";
 
-export function HeroFeatureSection() {
+interface HeroFeatureSectionProps {
+  onOpenWalletModal?: () => void;
+  connectedAddress?: string | null;
+  onOpenSwapModal?: () => void;
+  onOpenAuditModal?: () => void;
+  onOpenDAppsModal?: () => void;
+}
+
+export function HeroFeatureSection({
+  onOpenWalletModal,
+  connectedAddress,
+  onOpenSwapModal,
+  onOpenAuditModal,
+  onOpenDAppsModal,
+}: HeroFeatureSectionProps) {
   return (
-      <section className={styles.section} id="top">
-        <div className={styles.heroContainer}>
-          <div className={styles.navWrap}>
-            <Navbar />
-          </div>
-
-          <div className={styles.body}>
-            <div className={styles.copyColumn}>
-              <img src={stars} alt="stars" className={styles.stars} />
-              <HeroCopy />
-            </div>
-            <div className={styles.heroCardColumn}>
-              <WalletCard />
-            </div>
-          </div>
+    <section className={styles.section} id="top">
+      <div className={styles.heroContainer}>
+        <div className={styles.navWrap}>
+          <Navbar onOpenWalletModal={onOpenWalletModal} connectedAddress={connectedAddress} />
         </div>
 
-        <div className={styles.featureContainer} id="digital-assets">
-          <FloatingIcons />
-          <div className={styles.grid}>
-            <div className={styles.promoColumn}>
-
-              <div className={styles.gradientFeatureOrange}></div>
-              <div className={styles.gradientFeatureBlue}></div>
-
-              <PromoCard />
-            </div>
-
-            <div className={styles.connector} aria-hidden="true">
-              <CardsConnectorArrow />
-
-            </div>
-
-            <div className={styles.featureCardColumn}>
-              <WalletCard
-                  balance="00.0495"
-                  showCursor
-                  address="03x01 89xu2 .. 16x94 x893q"
-                  actionIcon={<MenuBarsBadgeIcon size={44} />}
-                  actionLabel="Menu"
-                  actionButtonSize="clamp(40px, 3.4vw, 44px)"
-                  showBadges={false}
-                  showPagination={false}
-                  showHeader={false}
-                  showStageBackground={false}
-                  cornerButton={<TexturedFabButton />}
-                  cornerButtonInset="clamp(-8px, -0.6vw, -4px)"
-              />
-
-              <div className={styles.gradientFeatureOrange2}></div>
-              <div className={styles.gradientFeatureBlue2}></div>
-            </div>
+        <div className={styles.body}>
+          <div className={styles.copyColumn}>
+            <img src={stars} alt="stars" className={styles.stars} />
+            <HeroCopy onOpenWalletModal={onOpenWalletModal} />
+          </div>
+          <div className={styles.heroCardColumn}>
+            <WalletCard onOpenSwap={onOpenSwapModal} onOpenWallet={onOpenWalletModal} />
           </div>
         </div>
-      </section>
+      </div>
+
+      <div className={styles.featureContainer} id="digital-assets">
+        <FloatingIcons />
+        <div className={styles.grid}>
+          <div className={styles.promoColumn}>
+            <div className={styles.gradientFeatureOrange}></div>
+            <div className={styles.gradientFeatureBlue}></div>
+
+            <PromoCard
+              onOpenSwap={onOpenSwapModal}
+              onOpenAudit={onOpenAuditModal}
+              onOpenDApps={onOpenDAppsModal}
+            />
+          </div>
+
+          <div className={styles.connector} aria-hidden="true">
+            <CardsConnectorArrow />
+          </div>
+
+          <div className={styles.featureCardColumn}>
+            <WalletCard
+              balance="00.0495"
+              showCursor
+              address="03x01 89xu2 .. 16x94 x893q"
+              actionIcon={<MenuBarsBadgeIcon size={44} />}
+              actionLabel="Menu"
+              actionButtonSize="clamp(40px, 3.4vw, 44px)"
+              showBadges={false}
+              showPagination={false}
+              showHeader={false}
+              showStageBackground={false}
+              cornerButton={<TexturedFabButton onClick={onOpenWalletModal} />}
+              cornerButtonInset="clamp(-8px, -0.6vw, -4px)"
+              onOpenSwap={onOpenSwapModal}
+              onOpenWallet={onOpenWalletModal}
+            />
+
+            <div className={styles.gradientFeatureOrange2}></div>
+            <div className={styles.gradientFeatureBlue2}></div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 ----- END FILE: src/components/HeroFeatureSection/HeroFeatureSection.tsx -----
@@ -2484,109 +3338,85 @@ import { TextScramble } from "../common/TextScramble";
 import { SIGNATURE_EASE } from "../common/motionConfig";
 import styles from "./HeroCopy.module.css";
 
-export function HeroCopy() {
+interface HeroCopyProps {
+  onOpenWalletModal?: () => void;
+}
+
+export function HeroCopy({ onOpenWalletModal }: HeroCopyProps) {
   return (
-      <div className={styles.root}>
-        <div className={styles.centerBlock}>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.4 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 0.1 }}
-          >
-            <CubeIcon size={40} className={styles.cube} />
-          </motion.div>
+    <div className={styles.root}>
+      <div className={styles.centerBlock}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.4 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 0.1 }}
+        >
+          <CubeIcon size={40} className={styles.cube} />
+        </motion.div>
 
-          <h1 className={styles.headline}>
-            <TextScramble lines={["Decentralized", "Future Cryptocurrency", "Assets"]} delay={0.2} duration={1.4} whileInView={false} />
-          </h1>
+        <h1 className={styles.headline}>
+          <TextScramble
+            lines={["Decentralized", "Future Cryptocurrency", "Assets"]}
+            delay={0.2}
+            duration={1.4}
+            whileInView={false}
+          />
+        </h1>
 
-          <p className={styles.lede}>
-            <WordReveal
-              text="A Platform for CryptoWave Surfing Financial Freedom"
-              delay={0.9}
-              wordDelay={0.04}
-            />
-          </p>
-
-          <motion.div
-            className={styles.ctaRow}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 1.3 }}
-          >
-            <a href="#discover" className={styles.btnGhost}>
-              Discover
-            </a>
-            <a href="#join" className={styles.btnPrimary}>
-              Join now
-              <ArrowRightIcon size={14} />
-            </a>
-          </motion.div>
-        </div>
+        <p className={styles.lede}>
+          <WordReveal
+            text="A Platform for CryptoWave Surfing Financial Freedom"
+            delay={0.9}
+            wordDelay={0.04}
+          />
+        </p>
 
         <motion.div
-          className={styles.footerRow}
-          initial={{ opacity: 0, y: 12 }}
+          className={styles.ctaRow}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 1.5 }}
+          transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 1.3 }}
         >
-          <a href="#contact" className={styles.contactPill}>
-            <ChatBubbleIcon size={16} />
-            Contact Us
+          <a href="#digital-assets" className={styles.btnGhost}>
+            Discover
           </a>
-
-          <button type="button" className={styles.fab} aria-label="Quick actions">
-            <SparkleIcon size={22} />
+          <button
+            type="button"
+            onClick={onOpenWalletModal}
+            className={styles.btnPrimary}
+            style={{ border: "none", cursor: "pointer" }}
+          >
+            Join now
+            <ArrowRightIcon size={14} />
           </button>
         </motion.div>
       </div>
+
+      <motion.div
+        className={styles.footerRow}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 1.5 }}
+      >
+        <a href="#digital-assets" className={styles.contactPill}>
+          <ChatBubbleIcon size={16} />
+          Explore Assets
+        </a>
+
+        <button
+          type="button"
+          onClick={onOpenWalletModal}
+          className={styles.fab}
+          aria-label="Quick actions"
+          style={{ border: "none", cursor: "pointer" }}
+        >
+          <SparkleIcon size={22} />
+        </button>
+      </motion.div>
+    </div>
   );
 }
 ----- END FILE: src/components/HeroSection/HeroCopy.tsx -----
-
------ BEGIN FILE: src/components/HeroSection/WalletCard.module.css -----
-.panel {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  padding: clamp(20px, 2.4vw, 32px);
-  background: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0.02) 100%
-    ),
-    #030304;
-  border: 1px solid var(--color-border-panel);
-  border-radius: clamp(18px, 1.8vw, 26px);
-  box-shadow: 0 26px 25px 0 rgba(230, 221, 254, 0.07) inset;
-}
-
-.stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: clamp(32px, 5vw, 64px);
-}
-
-.stageCompact {
-  margin-top: 0;
-  justify-content: flex-start;
-}
-
-@media (min-width: 1024px) {
-  .panel {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .stage {
-    flex: 1;
-    justify-content: center;
-  }
-}
------ END FILE: src/components/HeroSection/WalletCard.module.css -----
 
 ----- BEGIN FILE: src/components/Navbar/Navbar.module.css -----
 .header {
@@ -2598,7 +3428,8 @@ export function HeroCopy() {
 .inner {
   display: flex;
   align-items: center;
-  gap: clamp(24px, 4vw, 56px);
+  justify-content: flex-start;
+  gap: 20px;
   padding-block: clamp(20px, 2.4vw, 32px);
 }
 
@@ -2613,168 +3444,209 @@ export function HeroCopy() {
   opacity: 0.75;
 }
 
-.links {
+.menuPillContainer {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.menuPillBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: var(--fs-nav);
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: background-color var(--duration-fast) var(--ease-out), border-color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out);
+}
+
+.menuPillBtn:hover {
+  background: var(--color-surface-3);
+  border-color: var(--color-border-strong);
+  transform: translateY(-1px);
+}
+
+.menuPillDropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 260px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  box-shadow: var(--shadow-panel);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(20px);
+}
+
+.dropdownItem {
   display: flex;
   align-items: center;
-  gap: clamp(20px, 2.6vw, 40px);
-}
-
-.link {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: var(--fs-nav);
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
-  white-space: nowrap;
-  transition: color var(--duration-fast) var(--ease-out);
+  text-decoration: none;
+  font-size: var(--fs-body-sm);
+  font-family: var(--font-body);
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
 }
 
-.link:hover {
+.dropdownItem:hover {
+  background: var(--color-surface-2);
   color: var(--color-text-primary);
 }
 
-.linkIndex {
-  color: rgba(255, 255, 255, 0.55);
-  font-variant-numeric: tabular-nums;
+.dropdownIndex {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-gold);
 }
 
-.menuToggle {
-  display: none;
+.dropdownDivider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin: 6px 0;
+}
+
+.dropdownConnectBtn {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  margin-left: auto;
-  color: var(--color-text-primary);
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border-default);
-  flex-shrink: 0;
+  background: var(--gradient-accent-diagonal);
+  border: none;
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-button);
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease-out);
 }
 
-.mobilePanel {
-  display: none;
+.dropdownConnectBtn:hover {
+  opacity: 0.9;
 }
 
-@media (max-width: 899px) {
-  .links {
-    display: none;
-  }
-
-  .menuToggle {
-    display: inline-flex;
-  }
-
-  .mobilePanel {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transition: max-height var(--duration-base) var(--ease-out),
-    opacity var(--duration-fast) linear;
-  }
-
-  .mobilePanelOpen {
-    max-height: 320px;
-    opacity: 1;
-    padding-bottom: 12px;
-  }
-
-  .mobileLink {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 14px 4px;
-    font-size: 1rem;
-    color: var(--color-text-secondary);
-    border-top: 1px solid var(--color-border-subtle);
-  }
-
-  .mobileLink:active {
-    color: var(--color-text-primary);
-  }
+.dropdownConnectActive {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-gold);
+  font-family: var(--font-mono);
 }
 ----- END FILE: src/components/Navbar/Navbar.module.css -----
 
 ----- BEGIN FILE: src/components/Navbar/Navbar.tsx -----
-import { useEffect, useId, useState } from "react";
-import { LogoMark, MenuIcon } from "../icons";
+import { useEffect, useState, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { LogoMark, WalletConnectIcon } from "../icons";
 import styles from "./Navbar.module.css";
 
-const NAV_LINKS = [
-  { index: "01", label: "CryptoCurrencies", href: "#crypto-currencies" },
+const ROUTED_MENU_ITEMS = [
+  { index: "01", label: "CryptoCurrencies", href: "#top" },
   { index: "02", label: "Digital Assets", href: "#digital-assets" },
   { index: "03", label: "Create a Wallet", href: "#create-wallet" },
+  { index: "04", label: "Exchange & Swap", href: "#fiat-exchange" },
+  { index: "05", label: "Security Audits", href: "#security" },
 ];
 
-export function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuId = useId();
+interface NavbarProps {
+  onOpenWalletModal?: () => void;
+  connectedAddress?: string | null;
+}
+
+export function Navbar({ onOpenWalletModal, connectedAddress }: NavbarProps) {
+  const [menuPillOpen, setMenuPillOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const query = window.matchMedia("(min-width: 900px)");
-    const handleChange = () => setMenuOpen(false);
-    query.addEventListener("change", handleChange);
-    return () => query.removeEventListener("change", handleChange);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setMenuPillOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (menuOpen) {
-      const original = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = original;
-      };
-    }
-  }, [menuOpen]);
-
   return (
-      <header className={styles.header}>
-        <div className={styles.inner}>
-          <a href="#top" className={styles.logo} aria-label="CryptoWave home">
-            <LogoMark size={42} />
-          </a>
+    <header className={styles.header}>
+      <div className={styles.inner}>
+        {/* Logo */}
+        <a href="#top" className={styles.logo} aria-label="CryptoWave home">
+          <LogoMark size={42} />
+        </a>
 
-          <nav className={styles.links} aria-label="Primary">
-            {NAV_LINKS.map((link) => (
-                <a key={link.index} href={link.href} className={styles.link}>
-                  <span className={styles.linkIndex}>[{link.index}]</span>
-                  {link.label}
-                </a>
-            ))}
-          </nav>
-
-          <button
-              type="button"
-              className={styles.menuToggle}
-              aria-expanded={menuOpen}
-              aria-controls={menuId}
-              aria-label={menuOpen ? "Close menu" : "Open menu"}
-              onClick={() => setMenuOpen((open) => !open)}
+        {/* Only the Menu Button */}
+        <div className={styles.menuPillContainer} ref={dropdownRef}>
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className={styles.menuPillBtn}
+            onClick={() => setMenuPillOpen((prev) => !prev)}
+            aria-expanded={menuPillOpen}
+            aria-label="Navigation Menu"
           >
-            <MenuIcon open={menuOpen} />
-          </button>
-        </div>
+            <span>Menu</span>
+            <span style={{ fontSize: "0.7rem" }}>{menuPillOpen ? "▲" : "▼"}</span>
+          </motion.button>
 
-        <nav
-            id={menuId}
-            aria-label="Primary mobile"
-            className={`${styles.mobilePanel} ${menuOpen ? styles.mobilePanelOpen : ""}`}
-        >
-          {NAV_LINKS.map((link) => (
-              <a
-                  key={link.index}
-                  href={link.href}
-                  className={styles.mobileLink}
-                  onClick={() => setMenuOpen(false)}
+          <AnimatePresence>
+            {menuPillOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className={styles.menuPillDropdown}
               >
-                <span className={styles.linkIndex}>[{link.index}]</span>
-                {link.label}
-              </a>
-          ))}
-        </nav>
-      </header>
+                {ROUTED_MENU_ITEMS.map((item) => (
+                  <a
+                    key={item.index}
+                    href={item.href}
+                    className={styles.dropdownItem}
+                    onClick={() => setMenuPillOpen(false)}
+                  >
+                    <span className={styles.dropdownIndex}>[{item.index}]</span>
+                    <span>{item.label}</span>
+                  </a>
+                ))}
+
+                <div className={styles.dropdownDivider} />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuPillOpen(false);
+                    if (onOpenWalletModal) onOpenWalletModal();
+                  }}
+                  className={`${styles.dropdownConnectBtn} ${connectedAddress ? styles.dropdownConnectActive : ""}`}
+                >
+                  <WalletConnectIcon size={16} />
+                  <span>{connectedAddress ? connectedAddress : "Connect Wallet"}</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </header>
   );
 }
 ----- END FILE: src/components/Navbar/Navbar.tsx -----
@@ -2877,14 +3749,16 @@ import styles from "./OrbitNavButton.module.css";
 interface NavArrowProps {
   direction: "prev" | "next";
   className?: string;
+  onClick?: () => void;
 }
 
-export function OrbitNavButton({ direction, className }: NavArrowProps) {
+export function OrbitNavButton({ direction, className, onClick }: NavArrowProps) {
   return (
     <button
       type="button"
       className={`${className ?? ""} ${styles.btn}`}
       aria-label={direction === "prev" ? "Previous" : "Next"}
+      onClick={onClick}
     >
       <ChevronRightIcon size={16} className={direction === "prev" ? styles.flip : undefined} />
     </button>
@@ -3491,6 +4365,91 @@ export const bottomRows: ProtocolIcon[][] = [
 
 ----- END FILE: src/components/OrbitSection/protocolIcons.ts -----
 
+----- BEGIN FILE: src/components/ThemeToggle.tsx -----
+import { useEffect, useState } from 'react'
+
+type ThemeMode = 'light' | 'dark' | 'auto'
+
+function getInitialMode(): ThemeMode {
+  if (typeof window === 'undefined') {
+    return 'auto'
+  }
+
+  const stored = window.localStorage.getItem('theme')
+  if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+    return stored
+  }
+
+  return 'auto'
+}
+
+function applyThemeMode(mode: ThemeMode) {
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+  const resolved = mode === 'auto' ? (prefersDark ? 'dark' : 'light') : mode
+
+  document.documentElement.classList.remove('light', 'dark')
+  document.documentElement.classList.add(resolved)
+
+  if (mode === 'auto') {
+    document.documentElement.removeAttribute('data-theme')
+  } else {
+    document.documentElement.setAttribute('data-theme', mode)
+  }
+
+  document.documentElement.style.colorScheme = resolved
+}
+
+export default function ThemeToggle() {
+  const [mode, setMode] = useState<ThemeMode>('auto')
+
+  useEffect(() => {
+    const initialMode = getInitialMode()
+    setMode(initialMode)
+    applyThemeMode(initialMode)
+  }, [])
+
+  useEffect(() => {
+    if (mode !== 'auto') {
+      return
+    }
+
+    const media = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = () => applyThemeMode('auto')
+
+    media.addEventListener('change', onChange)
+    return () => {
+      media.removeEventListener('change', onChange)
+    }
+  }, [mode])
+
+  function toggleMode() {
+    const nextMode: ThemeMode =
+      mode === 'light' ? 'dark' : mode === 'dark' ? 'auto' : 'light'
+    setMode(nextMode)
+    applyThemeMode(nextMode)
+    window.localStorage.setItem('theme', nextMode)
+  }
+
+  const label =
+    mode === 'auto'
+      ? 'Theme mode: auto (system). Click to switch to light mode.'
+      : `Theme mode: ${mode}. Click to switch mode.`
+
+  return (
+    <button
+      type="button"
+      onClick={toggleMode}
+      aria-label={label}
+      title={label}
+      className="rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5"
+    >
+      {mode === 'auto' ? 'Auto' : mode === 'dark' ? 'Dark' : 'Light'}
+    </button>
+  )
+}
+
+----- END FILE: src/components/ThemeToggle.tsx -----
+
 ----- BEGIN FILE: src/components/WalletCard/BalanceCard.module.css -----
 .root {
   position: relative;
@@ -3650,14 +4609,13 @@ interface BalanceCardProps {
   address?: string;
   actionIcon?: ReactNode;
   actionLabel?: string;
-  /** Overrides the action button's default size, e.g. "clamp(38px, 3.4vw, 44px)". */
   actionButtonSize?: string;
   showBadges?: boolean;
-  /** Delay (seconds) before the overlap badges (coins + connector lines) start animating in. */
   badgesDelay?: number;
   cornerButton?: ReactNode;
-  /** Overrides the corner button's default inset (right/bottom), e.g. "clamp(-8px, -0.6vw, -4px)". */
   cornerButtonInset?: string;
+  onOpenSwap?: () => void;
+  onOpenWallet?: () => void;
 }
 
 export function BalanceCard({
@@ -3671,7 +4629,17 @@ export function BalanceCard({
   badgesDelay = 0,
   cornerButton,
   cornerButtonInset,
+  onOpenSwap,
+  onOpenWallet,
 }: BalanceCardProps) {
+  const handleAction = () => {
+    if (actionLabel.toLowerCase().includes("menu") || actionLabel.toLowerCase().includes("wallet")) {
+      if (onOpenWallet) onOpenWallet();
+    } else {
+      if (onOpenSwap) onOpenSwap();
+    }
+  };
+
   return (
     <div className={styles.root}>
       <div className={styles.glowMask} aria-hidden="true">
@@ -3687,13 +4655,14 @@ export function BalanceCard({
           type="button"
           className={styles.sparkleBtn}
           aria-label={actionLabel}
+          onClick={handleAction}
           style={actionButtonSize ? ({ "--action-btn-size": actionButtonSize } as CSSProperties) : undefined}
         >
           {actionIcon ?? <RippleXIcon size={17} />}
         </button>
       </div>
 
-      <div className={styles.addressField}>
+      <div className={styles.addressField} onClick={onOpenWallet} style={{ cursor: "pointer" }}>
         <span className={styles.addressLabel}>Wallet address</span>
         <span className={styles.addressValue}>{address}</span>
       </div>
@@ -4554,23 +5523,16 @@ interface WalletCardProps {
   showStageBackground?: boolean;
   cornerButton?: ReactNode;
   cornerButtonInset?: string;
+  onOpenSwap?: () => void;
+  onOpenWallet?: () => void;
 }
 
-/** Smooth, no-overshoot ease - monotonic, gentle deceleration, no bounce. */
 const SMOOTH_EASE = [0.22, 1, 0.36, 1] as const;
 
 const STAR_COUNT = 42;
 const STAR_STAGGER = 0.012;
 const STAR_DURATION = 0.35;
 
-/**
- * Build-up sequence, computed as a running "cursor" through time. The
- * panel background is a hard gate: it is not there, then it fully
- * finishes fading in, and only then does anything start drawing inside
- * it (no overlap for that one step - every later step is allowed to
- * start partway through the previous one, which is what keeps the whole
- * sequence feeling continuous instead of a series of separate pauses).
- */
 function useRevealTiming({ showHeader, showStageBackground }: { showHeader: boolean; showStageBackground: boolean }) {
   const panelFadeDuration = 0.45;
   let t = panelFadeDuration;
@@ -4616,6 +5578,8 @@ export function WalletCard({
   showStageBackground = true,
   cornerButton,
   cornerButtonInset,
+  onOpenSwap,
+  onOpenWallet,
 }: WalletCardProps = {}) {
   const timing = useRevealTiming({ showHeader, showStageBackground });
 
@@ -4624,6 +5588,7 @@ export function WalletCard({
       className={styles.panel}
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -4, scale: 1.01 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: SMOOTH_EASE }}
     >
@@ -4659,6 +5624,8 @@ export function WalletCard({
             badgesDelay={timing.badgesDelay}
             cornerButton={cornerButton}
             cornerButtonInset={cornerButtonInset}
+            onOpenSwap={onOpenSwap}
+            onOpenWallet={onOpenWallet}
           />
         </motion.div>
       </div>
@@ -4882,7 +5849,1303 @@ export function CountUp({ to, decimals = 0, prefix = "", suffix = "", duration =
   );
 }
 
+
 ----- END FILE: src/components/common/CountUp.tsx -----
+
+----- BEGIN FILE: src/components/common/Modals/DAppBrowserModal.module.css -----
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.82);
+  backdrop-filter: blur(16px);
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-panel);
+  z-index: 10;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.headerTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-on-accent);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.closeBtn {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.catRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.catTab {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-1);
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+
+.catTabActive {
+  background: var(--gradient-accent-diagonal);
+  color: var(--color-text-on-accent);
+  border-color: transparent;
+  font-weight: 700;
+}
+
+.dappGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.dappCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+
+.dappCard:hover {
+  background: var(--color-surface-2);
+  border-color: var(--color-border-default);
+}
+
+.dappInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dappIconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+}
+
+.dappNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dappName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--color-text-primary);
+}
+
+.categoryTag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-2);
+  color: var(--color-gold);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.dappDesc {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.launchBtn {
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-default);
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.launchBtn:hover {
+  background: var(--color-surface-3);
+}
+
+----- END FILE: src/components/common/Modals/DAppBrowserModal.module.css -----
+
+----- BEGIN FILE: src/components/common/Modals/DAppBrowserModal.tsx -----
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CubeIcon, SafeBrowserIcon, SwapArrowsIcon, RippleXIcon } from "../../icons";
+import styles from "./DAppBrowserModal.module.css";
+
+interface DAppBrowserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onLaunch?: (dappName: string) => void;
+}
+
+const DAPPS = [
+  { id: "uniswap", name: "Uniswap v3", category: "DeFi", desc: "Automated liquidity protocol & spot exchange", icon: <SwapArrowsIcon size={18} /> },
+  { id: "opensea", name: "OpenSea Pro", category: "NFTs", desc: "Aggregated Web3 NFT marketplace & analytics", icon: <CubeIcon size={18} /> },
+  { id: "aave", name: "Aave v3", category: "DeFi", desc: "Non-custodial liquidity protocol for earning yield", icon: <RippleXIcon size={18} /> },
+  { id: "lido", name: "Lido Finance", category: "Staking", desc: "Liquid staking solution for Ethereum & Solana", icon: <SafeBrowserIcon size={18} /> },
+  { id: "blur", name: "Blur IO", category: "NFTs", desc: "Pro NFT trading platform for professional traders", icon: <CubeIcon size={18} /> },
+  { id: "gmx", name: "GMX Perpetual", category: "DeFi", desc: "Decentralized perpetual swap exchange with 0.05% fee", icon: <SwapArrowsIcon size={18} /> },
+];
+
+export function DAppBrowserModal({ isOpen, onClose, onLaunch }: DAppBrowserModalProps) {
+  const [selectedCat, setSelectedCat] = useState("All");
+
+  const filteredDApps = selectedCat === "All" ? DAPPS : DAPPS.filter((d) => d.category === selectedCat);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className={styles.backdrop}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className={styles.overlay}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            className={styles.modal}
+          >
+            <div className={styles.header}>
+              <div className={styles.headerTitleWrap}>
+                <div className={styles.headerIcon}>
+                  <CubeIcon size={20} />
+                </div>
+                <div>
+                  <h3 className={styles.title}>Web3 dApp Directory</h3>
+                  <span className={styles.subtitle}>Verified On-Chain Protocols</span>
+                </div>
+              </div>
+              <button type="button" onClick={onClose} className={styles.closeBtn}>
+                &times;
+              </button>
+            </div>
+
+            <div className={styles.catRow}>
+              {["All", "DeFi", "NFTs", "Staking"].map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCat(cat)}
+                  className={`${styles.catTab} ${selectedCat === cat ? styles.catTabActive : ""}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.dappGrid}>
+              {filteredDApps.map((dapp) => (
+                <motion.div key={dapp.id} className={styles.dappCard}>
+                  <div className={styles.dappInfo}>
+                    <div className={styles.dappIconBox}>{dapp.icon}</div>
+                    <div>
+                      <div className={styles.dappNameRow}>
+                        <span className={styles.dappName}>{dapp.name}</span>
+                        <span className={styles.categoryTag}>{dapp.category}</span>
+                      </div>
+                      <span className={styles.dappDesc}>{dapp.desc}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onLaunch) onLaunch(dapp.name);
+                      onClose();
+                    }}
+                    className={styles.launchBtn}
+                  >
+                    Launch
+                  </button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+----- END FILE: src/components/common/Modals/DAppBrowserModal.tsx -----
+
+----- BEGIN FILE: src/components/common/Modals/SecurityAuditModal.module.css -----
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.82);
+  backdrop-filter: blur(16px);
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: var(--shadow-panel);
+  z-index: 10;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.headerTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-3);
+  border: 1px solid var(--color-border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-gold);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.closeBtn {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.scoreCard {
+  text-align: center;
+  padding: 20px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  margin-bottom: 18px;
+}
+
+.scoreNumber {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--color-gold);
+  letter-spacing: -1px;
+}
+
+.scoreStatus {
+  font-size: var(--fs-body-sm);
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--fs-body-sm);
+  color: var(--color-text-tertiary);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.stepActive {
+  color: var(--color-text-primary);
+}
+
+.stepBadge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  color: var(--color-text-secondary);
+}
+
+.stepBadgePassed {
+  background: var(--color-gold);
+  color: var(--color-text-on-accent);
+  border-color: var(--color-gold);
+}
+
+.actionBtn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-accent-diagonal);
+  border: none;
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+----- END FILE: src/components/common/Modals/SecurityAuditModal.module.css -----
+
+----- BEGIN FILE: src/components/common/Modals/SecurityAuditModal.tsx -----
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { SafeBrowserIcon } from "../../icons";
+import styles from "./SecurityAuditModal.module.css";
+
+interface SecurityAuditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const AUDIT_STEPS = [
+  "Auditing AES-256 Cloud Vault Keys...",
+  "Scanning Smart Contract Permissions...",
+  "Verifying Zero-Knowledge Proof Shields...",
+  "Checking Multi-Sig Signatures...",
+  "Audit Complete: 100% Secure & Compliant",
+];
+
+export function SecurityAuditModal({ isOpen, onClose }: SecurityAuditModalProps) {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isDone, setIsDone] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep(0);
+      setIsDone(false);
+      return;
+    }
+    const interval = setInterval(() => {
+      setCurrentStep((prev) => {
+        if (prev < AUDIT_STEPS.length - 1) {
+          return prev + 1;
+        } else {
+          setIsDone(true);
+          clearInterval(interval);
+          return prev;
+        }
+      });
+    }, 700);
+    return () => clearInterval(interval);
+  }, [isOpen]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className={styles.backdrop}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className={styles.overlay}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            className={styles.modal}
+          >
+            <div className={styles.header}>
+              <div className={styles.headerTitleWrap}>
+                <div className={styles.headerIcon}>
+                  <SafeBrowserIcon size={22} />
+                </div>
+                <div>
+                  <h3 className={styles.title}>Security Diagnostics</h3>
+                  <span className={styles.subtitle}>On-Chain Contract & Vault Audit</span>
+                </div>
+              </div>
+              <button type="button" onClick={onClose} className={styles.closeBtn}>
+                &times;
+              </button>
+            </div>
+
+            <div className={styles.scoreCard}>
+              <div className={styles.scoreNumber}>
+                {isDone ? "100 / 100" : `${Math.round(((currentStep + 1) / AUDIT_STEPS.length) * 100)}%`}
+              </div>
+              <div className={styles.scoreStatus}>
+                {isDone ? "Shield Status: Fully Protected" : "Running Deep Security Inspection..."}
+              </div>
+            </div>
+
+            <div className={styles.stepList}>
+              {AUDIT_STEPS.map((stepText, idx) => {
+                const isPassed = idx <= currentStep;
+                return (
+                  <div
+                    key={stepText}
+                    className={`${styles.stepItem} ${isPassed ? styles.stepActive : ""}`}
+                  >
+                    <span className={`${styles.stepBadge} ${isPassed ? styles.stepBadgePassed : ""}`}>
+                      {isPassed ? "✓" : idx + 1}
+                    </span>
+                    <span>{stepText}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={onClose}
+              className={styles.actionBtn}
+            >
+              {isDone ? "Close Security Report" : "Inspecting Vault..."}
+            </motion.button>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+----- END FILE: src/components/common/Modals/SecurityAuditModal.tsx -----
+
+----- BEGIN FILE: src/components/common/Modals/SwapModal.module.css -----
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.82);
+  backdrop-filter: blur(16px);
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-panel);
+  z-index: 10;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.headerTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIcon {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-on-accent);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.closeBtn {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.tokenCard {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+  margin-bottom: 6px;
+}
+
+.inputRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.amountInput {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.tokenSelect {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-mono);
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.tokenOption {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+.usdValue {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+.swapToggleWrap {
+  display: flex;
+  justify-content: center;
+  margin: -10px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.swapToggleBtn {
+  background: var(--gradient-accent-diagonal);
+  border: 3px solid var(--color-bg-elevated);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-on-accent);
+  box-shadow: 0 4px 12px rgba(246, 176, 60, 0.3);
+}
+
+.calculatedValue {
+  font-family: var(--font-mono);
+  fontSize: 1.4rem;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.rateCard {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.rateRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rateRow + .rateRow {
+  margin-top: 4px;
+}
+
+.rateHighlight {
+  color: var(--color-gold);
+  font-weight: 600;
+}
+
+.submitBtn {
+  margin-top: 18px;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--gradient-accent-diagonal);
+  border: none;
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-button);
+  cursor: pointer;
+}
+
+.submitBtnDisabled {
+  background: var(--color-surface-3);
+  color: var(--color-text-tertiary);
+  cursor: wait;
+}
+
+----- END FILE: src/components/common/Modals/SwapModal.module.css -----
+
+----- BEGIN FILE: src/components/common/Modals/SwapModal.tsx -----
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { SwapArrowsIcon } from "../../icons";
+import styles from "./SwapModal.module.css";
+
+interface SwapModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: (msg: string) => void;
+}
+
+const TOKENS = [
+  { symbol: "BTC", name: "Bitcoin", price: 92450.0, balance: "0.0495" },
+  { symbol: "ETH", name: "Ethereum", price: 3420.5, balance: "1.820" },
+  { symbol: "SOL", name: "Solana", price: 184.2, balance: "24.50" },
+  { symbol: "USDT", name: "Tether USD", price: 1.0, balance: "4895.20" },
+];
+
+export function SwapModal({ isOpen, onClose, onSuccess }: SwapModalProps) {
+  const [fromToken, setFromToken] = useState(TOKENS[0]);
+  const [toToken, setToToken] = useState(TOKENS[1]);
+  const [fromAmount, setFromAmount] = useState<string>("0.01");
+  const [swapping, setSwapping] = useState(false);
+
+  const numAmount = parseFloat(fromAmount) || 0;
+  const calculatedToAmount = ((numAmount * fromToken.price) / toToken.price).toFixed(4);
+
+  const handleSwapTokens = () => {
+    const temp = fromToken;
+    setFromToken(toToken);
+    setToToken(temp);
+  };
+
+  const handleExecuteSwap = () => {
+    if (numAmount <= 0) return;
+    setSwapping(true);
+    setTimeout(() => {
+      setSwapping(false);
+      if (onSuccess) {
+        onSuccess(`Swapped ${fromAmount} ${fromToken.symbol} → ${calculatedToAmount} ${toToken.symbol}`);
+      }
+      onClose();
+    }, 1200);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className={styles.backdrop}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className={styles.overlay}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            className={styles.modal}
+          >
+            <div className={styles.header}>
+              <div className={styles.headerTitleWrap}>
+                <div className={styles.headerIcon}>
+                  <SwapArrowsIcon size={20} />
+                </div>
+                <h3 className={styles.title}>Cross-Chain Swap</h3>
+              </div>
+              <button type="button" onClick={onClose} className={styles.closeBtn}>
+                &times;
+              </button>
+            </div>
+
+            {/* From Token */}
+            <div className={styles.tokenCard}>
+              <div className={styles.cardHeader}>
+                <span>You Pay</span>
+                <span>Bal: {fromToken.balance} {fromToken.symbol}</span>
+              </div>
+              <div className={styles.inputRow}>
+                <input
+                  type="number"
+                  value={fromAmount}
+                  onChange={(e) => setFromAmount(e.target.value)}
+                  className={styles.amountInput}
+                  placeholder="0.0"
+                />
+                <select
+                  value={fromToken.symbol}
+                  onChange={(e) => setFromToken(TOKENS.find((t) => t.symbol === e.target.value) || TOKENS[0])}
+                  className={styles.tokenSelect}
+                >
+                  {TOKENS.map((t) => (
+                    <option key={t.symbol} value={t.symbol} className={styles.tokenOption}>
+                      {t.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.usdValue}>
+                ≈ ${(numAmount * fromToken.price).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
+              </div>
+            </div>
+
+            {/* Swap Button */}
+            <div className={styles.swapToggleWrap}>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.1, rotate: 180 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleSwapTokens}
+                className={styles.swapToggleBtn}
+              >
+                &uarr;&darr;
+              </motion.button>
+            </div>
+
+            {/* To Token */}
+            <div className={styles.tokenCard}>
+              <div className={styles.cardHeader}>
+                <span>You Receive</span>
+                <span>Bal: {toToken.balance} {toToken.symbol}</span>
+              </div>
+              <div className={styles.inputRow}>
+                <div className={styles.calculatedValue}>{calculatedToAmount}</div>
+                <select
+                  value={toToken.symbol}
+                  onChange={(e) => setToToken(TOKENS.find((t) => t.symbol === e.target.value) || TOKENS[1])}
+                  className={styles.tokenSelect}
+                >
+                  {TOKENS.map((t) => (
+                    <option key={t.symbol} value={t.symbol} className={styles.tokenOption}>
+                      {t.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.usdValue}>
+                1 {fromToken.symbol} = {(fromToken.price / toToken.price).toFixed(4)} {toToken.symbol}
+              </div>
+            </div>
+
+            {/* Rate Info */}
+            <div className={styles.rateCard}>
+              <div className={styles.rateRow}>
+                <span>Slippage Tolerance</span>
+                <span className={styles.rateHighlight}>0.1%</span>
+              </div>
+              <div className={styles.rateRow}>
+                <span>Protocol Fee</span>
+                <span>0.05%</span>
+              </div>
+            </div>
+
+            {/* Action */}
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleExecuteSwap}
+              disabled={swapping || numAmount <= 0}
+              className={`${styles.submitBtn} ${swapping || numAmount <= 0 ? styles.submitBtnDisabled : ""}`}
+            >
+              {swapping ? "Executing Swap..." : `Confirm Swap (${fromToken.symbol} → ${toToken.symbol})`}
+            </motion.button>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+----- END FILE: src/components/common/Modals/SwapModal.tsx -----
+
+----- BEGIN FILE: src/components/common/Modals/WalletConnectModal.module.css -----
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 4, 6, 0.82);
+  backdrop-filter: blur(16px);
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-panel);
+  z-index: 10;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.headerTitleWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.headerIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-on-accent);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.closeBtn {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.closeBtn:hover {
+  background: var(--color-surface-3);
+  color: var(--color-text-primary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.walletBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
+}
+
+.walletBtn:hover {
+  background: var(--color-surface-2);
+  border-color: var(--color-border-strong);
+}
+
+.walletBtnActive {
+  background: var(--color-surface-3);
+  border-color: var(--color-gold);
+}
+
+.walletInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.walletIconBox {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+}
+
+.walletNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.walletName {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+
+.badge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--color-surface-2);
+  color: var(--color-gold);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.walletDesc {
+  font-size: var(--fs-caption);
+  color: var(--color-text-secondary);
+}
+
+.arrow {
+  color: var(--color-text-tertiary);
+  font-size: 1rem;
+}
+
+.connectingText {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-gold);
+  font-weight: 600;
+}
+
+.footerNote {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-text-tertiary);
+}
+
+----- END FILE: src/components/common/Modals/WalletConnectModal.module.css -----
+
+----- BEGIN FILE: src/components/common/Modals/WalletConnectModal.tsx -----
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BitcoinIcon, SafeBrowserIcon, WalletConnectIcon, RippleXIcon } from "../../icons";
+import styles from "./WalletConnectModal.module.css";
+
+interface WalletConnectModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConnect: (walletName: string, address: string) => void;
+}
+
+const WALLETS = [
+  {
+    id: "metamask",
+    name: "MetaMask",
+    desc: "Browser extension & mobile key storage",
+    badge: "Popular",
+    icon: <BitcoinIcon size={20} />,
+  },
+  {
+    id: "phantom",
+    name: "Phantom Vault",
+    desc: "Multi-chain Solana & Bitcoin Web3 key",
+    badge: "Fast",
+    icon: <RippleXIcon size={20} />,
+  },
+  {
+    id: "walletconnect",
+    name: "WalletConnect",
+    desc: "Scan QR code with 300+ mobile wallets",
+    badge: "Universal",
+    icon: <WalletConnectIcon size={20} />,
+  },
+  {
+    id: "coinbase",
+    name: "Coinbase Wallet",
+    desc: "Self-custody account abstraction wallet",
+    badge: "Secure",
+    icon: <SafeBrowserIcon size={20} />,
+  },
+];
+
+export function WalletConnectModal({ isOpen, onClose, onConnect }: WalletConnectModalProps) {
+  const [connectingId, setConnectingId] = useState<string | null>(null);
+
+  const handleSelect = (wallet: (typeof WALLETS)[0]) => {
+    setConnectingId(wallet.id);
+    setTimeout(() => {
+      const mockAddress = "0x" + Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join("") + "...8F9";
+      onConnect(wallet.name, mockAddress);
+      setConnectingId(null);
+      onClose();
+    }, 1000);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className={styles.backdrop}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className={styles.overlay}
+          />
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            className={styles.modal}
+          >
+            <div className={styles.header}>
+              <div className={styles.headerTitleWrap}>
+                <div className={styles.headerIcon}>
+                  <WalletConnectIcon size={22} />
+                </div>
+                <div>
+                  <h3 className={styles.title}>Connect Web3 Wallet</h3>
+                  <p className={styles.subtitle}>Select self-custody provider</p>
+                </div>
+              </div>
+              <button type="button" onClick={onClose} className={styles.closeBtn}>
+                &times;
+              </button>
+            </div>
+
+            <div className={styles.list}>
+              {WALLETS.map((w) => {
+                const isConnecting = connectingId === w.id;
+                return (
+                  <motion.button
+                    key={w.id}
+                    type="button"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleSelect(w)}
+                    disabled={connectingId !== null}
+                    className={`${styles.walletBtn} ${isConnecting ? styles.walletBtnActive : ""}`}
+                  >
+                    <div className={styles.walletInfo}>
+                      <div className={styles.walletIconBox}>{w.icon}</div>
+                      <div>
+                        <div className={styles.walletNameRow}>
+                          <span className={styles.walletName}>{w.name}</span>
+                          <span className={styles.badge}>{w.badge}</span>
+                        </div>
+                        <span className={styles.walletDesc}>{w.desc}</span>
+                      </div>
+                    </div>
+
+                    {isConnecting ? (
+                      <span className={styles.connectingText}>Connecting...</span>
+                    ) : (
+                      <span className={styles.arrow}>&rarr;</span>
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            <div className={styles.footerNote}>
+              <span>Encrypted 256-bit Connection</span>
+              <span>Self-Custody</span>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+----- END FILE: src/components/common/Modals/WalletConnectModal.tsx -----
 
 ----- BEGIN FILE: src/components/common/StarField.module.css -----
 .root {
@@ -4893,6 +7156,7 @@ export function CountUp({ to, decimals = 0, prefix = "", suffix = "", duration =
   pointer-events: none;
   z-index: 0;
 }
+
 
 ----- END FILE: src/components/common/StarField.module.css -----
 
@@ -4967,6 +7231,7 @@ export function StarField() {
     </svg>
   );
 }
+
 ----- END FILE: src/components/common/StarField.tsx -----
 
 ----- BEGIN FILE: src/components/common/TextScramble.tsx -----
@@ -5062,6 +7327,7 @@ export function TextScramble({
   );
 }
 
+
 ----- END FILE: src/components/common/TextScramble.tsx -----
 
 ----- BEGIN FILE: src/components/common/TexturedFabButton.module.css -----
@@ -5092,6 +7358,7 @@ export function TextScramble({
   }
 }
 
+
 ----- END FILE: src/components/common/TexturedFabButton.module.css -----
 
 ----- BEGIN FILE: src/components/common/TexturedFabButton.tsx -----
@@ -5101,23 +7368,101 @@ import styles from "./TexturedFabButton.module.css";
 interface TexturedFabButtonProps {
   label?: string;
   className?: string;
+  onClick?: () => void;
 }
 
-/**
- * The tilted, textured circular button (abstract-design.svg background,
- * thick dark border, inset highlight) - originally the hero's "quick
- * actions" button, reused wherever that same treatment is needed (e.g. the
- * wallet card's corner action button) instead of duplicating the styling.
- */
-export function TexturedFabButton({ label = "Quick actions", className }: TexturedFabButtonProps) {
+export function TexturedFabButton({ label = "Quick actions", className, onClick }: TexturedFabButtonProps) {
   return (
-    <button type="button" className={`${styles.fab} ${className ?? ""}`} aria-label={label}>
+    <button
+      type="button"
+      className={`${styles.fab} ${className ?? ""}`}
+      aria-label={label}
+      onClick={onClick}
+    >
       <SparkleIcon size={22} />
     </button>
   );
 }
 
 ----- END FILE: src/components/common/TexturedFabButton.tsx -----
+
+----- BEGIN FILE: src/components/common/ToastNotification.module.css -----
+.toast {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 2000;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-gold);
+  color: var(--color-text-primary);
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: var(--fs-body-sm);
+  backdrop-filter: blur(16px);
+}
+
+.toastDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  box-shadow: 0 0 10px var(--color-gold);
+}
+
+.closeBtn {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
+----- END FILE: src/components/common/ToastNotification.module.css -----
+
+----- BEGIN FILE: src/components/common/ToastNotification.tsx -----
+import { motion, AnimatePresence } from "framer-motion";
+import styles from "./ToastNotification.module.css";
+
+interface ToastProps {
+  message: string | null;
+  onClose: () => void;
+}
+
+export function ToastNotification({ message, onClose }: ToastProps) {
+  return (
+    <AnimatePresence>
+      {message && (
+        <motion.div
+          initial={{ opacity: 0, y: 40, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20, scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+          className={styles.toast}
+        >
+          <span className={styles.toastDot} />
+          <span>{message}</span>
+          <button type="button" onClick={onClose} className={styles.closeBtn}>
+            &times;
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+----- END FILE: src/components/common/ToastNotification.tsx -----
 
 ----- BEGIN FILE: src/components/common/motion.tsx -----
 import { motion } from "framer-motion";
@@ -5158,13 +7503,12 @@ export function WordReveal({
   whileInView = false,
   amount = 0.4,
 }: WordRevealProps) {
-  const MotionTag = motion(Tag as ElementType) as ElementType<Record<string, unknown>>;
+  const MotionTag = motion.create(Tag as ElementType) as ElementType<Record<string, unknown>>;
   let counter = 0;
 
   const renderWord = (word: string, isLastInLine: boolean) => {
     const i = counter++;
     const common = {
-      key: i,
       style: { display: "inline-block" },
       initial: { opacity: 0, y: 14, filter: "blur(6px)" },
       transition: {
@@ -5175,6 +7519,7 @@ export function WordReveal({
     };
     return whileInView ? (
       <motion.span
+        key={i}
         {...common}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
         viewport={{ once: true, amount }}
@@ -5183,7 +7528,7 @@ export function WordReveal({
         {!isLastInLine ? "\u00A0" : ""}
       </motion.span>
     ) : (
-      <motion.span {...common} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}>
+      <motion.span key={i} {...common} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}>
         {word}
         {!isLastInLine ? "\u00A0" : ""}
       </motion.span>
@@ -5261,6 +7606,7 @@ export function Reveal({
   );
 }
 
+
 ----- END FILE: src/components/common/motion.tsx -----
 
 ----- BEGIN FILE: src/components/common/motionConfig.ts -----
@@ -5271,6 +7617,7 @@ export function Reveal({
  * entrance animations so they read as one coherent motion language.
  */
 export const SIGNATURE_EASE = [0.21, 1.02, 0.43, 1.01] as const;
+
 
 ----- END FILE: src/components/common/motionConfig.ts -----
 
@@ -5329,6 +7676,7 @@ export function BitcoinGlyphIcon({ size = 16, className }: IconProps) {
     </svg>
   );
 }
+
 ----- END FILE: src/components/icons/BitcoinGlyphIcon.tsx -----
 
 ----- BEGIN FILE: src/components/icons/BitcoinIcon.tsx -----
@@ -5436,6 +7784,7 @@ export function ChevronRightIcon({ size = 16, className }: IconProps) {
     </svg>
   );
 }
+
 ----- END FILE: src/components/icons/ChevronRightIcon.tsx -----
 
 ----- BEGIN FILE: src/components/icons/CommitDotIcon.tsx -----
@@ -6588,6 +8937,7 @@ export { GradientLogoBadge } from "./GradientLogoBadge";
 export { GrayBitcoinIcon } from "./GrayBitcoinIcon";
 export { LightningLogoMark } from "./LightningLogoMark";
 export { MenuBarsBadgeIcon } from "./MenuBarsBadgeIcon";
+
 ----- END FILE: src/components/icons/index.ts -----
 
 ----- BEGIN FILE: src/hooks/use-mobile.tsx -----
@@ -6611,7 +8961,63 @@ export function useIsMobile() {
   return !!isMobile;
 }
 
+
 ----- END FILE: src/hooks/use-mobile.tsx -----
+
+----- BEGIN FILE: src/lib/error-capture.ts -----
+let lastError: Error | null = null;
+
+// Capture unhandled errors for the SSR error boundary
+if (typeof globalThis !== "undefined") {
+  const origOnError = globalThis.onerror;
+  globalThis.onerror = (...args: Parameters<NonNullable<OnErrorEventHandler>>) => {
+    if (args[4] instanceof Error) lastError = args[4];
+    if (typeof origOnError === "function") return (origOnError as Function)(...args);
+    return false;
+  };
+}
+
+export function consumeLastCapturedError(): Error | null {
+  const err = lastError;
+  lastError = null;
+  return err;
+}
+
+----- END FILE: src/lib/error-capture.ts -----
+
+----- BEGIN FILE: src/lib/error-page.ts -----
+export function renderErrorPage(): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Error</title>
+  <style>
+    body { background: #060606; color: #fff; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+    .wrap { text-align: center; max-width: 420px; }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+    p { color: rgba(255,255,255,0.6); }
+    a { color: #f6b03c; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Something went wrong</h1>
+    <p>Please try refreshing the page or <a href="/">go home</a>.</p>
+  </div>
+</body>
+</html>`;
+}
+
+----- END FILE: src/lib/error-page.ts -----
+
+----- BEGIN FILE: src/lib/lovable-error-reporting.ts -----
+export function reportLovableError(_error: Error, _context?: Record<string, unknown>) {
+  // no-op in production
+}
+
+----- END FILE: src/lib/lovable-error-reporting.ts -----
 
 ----- BEGIN FILE: src/lib/utils.ts -----
 import { clsx, type ClassValue } from "clsx";
@@ -6621,25 +9027,125 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+
 ----- END FILE: src/lib/utils.ts -----
 
+----- BEGIN FILE: src/routeTree.gen.ts -----
+/* eslint-disable */
+
+// @ts-nocheck
+
+// noinspection JSUnusedGlobalSymbols
+
+// This file was automatically generated by TanStack Router.
+// You should NOT make any changes in this file as it will be overwritten.
+// Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
+
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/about'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/about'
+  id: '__root__' | '/' | '/about'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+}
+
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+  }
+}
+
+const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+}
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
+
+----- END FILE: src/routeTree.gen.ts -----
+
 ----- BEGIN FILE: src/router.tsx -----
-import { QueryClient } from "@tanstack/react-query";
-import { createRouter } from "@tanstack/react-router";
-import { routeTree } from "./routeTree.gen";
+import { createRouter as createTanStackRouter } from '@tanstack/react-router'
+import { QueryClient } from '@tanstack/react-query'
+import { routeTree } from './routeTree.gen'
 
-export const getRouter = () => {
-  const queryClient = new QueryClient();
+export function getRouter() {
+  const queryClient = new QueryClient()
 
-  const router = createRouter({
+  const router = createTanStackRouter({
     routeTree,
-    context: { queryClient },
+    context: {
+      queryClient,
+    },
     scrollRestoration: true,
+    defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
-  });
+  })
 
-  return router;
-};
+  return router
+}
+
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: ReturnType<typeof getRouter>
+  }
+}
 
 ----- END FILE: src/router.tsx -----
 
@@ -6653,7 +9159,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -6767,7 +9273,9 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function RootComponent() {
-  const { queryClient } = Route.useRouteContext();
+  const context = Route.useRouteContext();
+  const [fallbackQueryClient] = useState(() => new QueryClient());
+  const queryClient = context?.queryClient ?? fallbackQueryClient;
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -6778,6 +9286,33 @@ function RootComponent() {
 }
 
 ----- END FILE: src/routes/__root.tsx -----
+
+----- BEGIN FILE: src/routes/about.tsx -----
+import { createFileRoute } from '@tanstack/react-router'
+
+export const Route = createFileRoute('/about')({
+  component: About,
+})
+
+function About() {
+  return (
+    <main className="page-wrap px-4 py-12">
+      <section className="island-shell rounded-2xl p-6 sm:p-8">
+        <p className="island-kicker mb-2">About</p>
+        <h1 className="display-title mb-3 text-4xl font-bold text-[var(--sea-ink)] sm:text-5xl">
+          A small starter with room to grow.
+        </h1>
+        <p className="m-0 max-w-3xl text-base leading-8 text-[var(--sea-ink-soft)]">
+          TanStack Start gives you type-safe routing, server functions, and
+          modern SSR defaults. Use this as a clean foundation, then layer in
+          your own routes, styling, and add-ons.
+        </p>
+      </section>
+    </main>
+  )
+}
+
+----- END FILE: src/routes/about.tsx -----
 
 ----- BEGIN FILE: src/routes/index.tsx -----
 import { createFileRoute } from "@tanstack/react-router";
@@ -6807,97 +9342,6 @@ export const Route = createFileRoute("/")({
 });
 
 ----- END FILE: src/routes/index.tsx -----
-
------ BEGIN FILE: src/server.ts -----
-import "./lib/error-capture";
-
-import { consumeLastCapturedError } from "./lib/error-capture";
-import { renderErrorPage } from "./lib/error-page";
-
-type ServerEntry = {
-  fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
-};
-
-let serverEntryPromise: Promise<ServerEntry> | undefined;
-
-async function getServerEntry(): Promise<ServerEntry> {
-  if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
-  }
-  return serverEntryPromise;
-}
-
-// h3 swallows in-handler throws into a normal 500 Response with body
-// {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
-async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
-  if (response.status < 500) return response;
-  const contentType = response.headers.get("content-type") ?? "";
-  if (!contentType.includes("application/json")) return response;
-
-  const body = await response.clone().text();
-  if (!isH3SwallowedErrorBody(body)) return response;
-
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
-  return new Response(renderErrorPage(), {
-    status: 500,
-    headers: { "content-type": "text/html; charset=utf-8" },
-  });
-}
-
-function isH3SwallowedErrorBody(body: string): boolean {
-  try {
-    const payload = JSON.parse(body) as { unhandled?: unknown; message?: unknown };
-    return payload.unhandled === true && payload.message === "HTTPError";
-  } catch {
-    return false;
-  }
-}
-
-export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
-    try {
-      const handler = await getServerEntry();
-      const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
-    } catch (error) {
-      console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
-    }
-  },
-};
-
------ END FILE: src/server.ts -----
-
------ BEGIN FILE: src/start.ts -----
-import { createStart, createMiddleware } from "@tanstack/react-start";
-
-import { renderErrorPage } from "./lib/error-page";
-
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
-  try {
-    return await next();
-  } catch (error) {
-    if (error != null && typeof error === "object" && "statusCode" in error) {
-      throw error;
-    }
-    console.error(error);
-    return new Response(renderErrorPage(), {
-      status: 500,
-      headers: { "content-type": "text/html; charset=utf-8" },
-    });
-  }
-});
-
-export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
-}));
-
------ END FILE: src/start.ts -----
 
 ----- BEGIN FILE: src/styles.css -----
 @import "tailwindcss" source(none);
@@ -7107,6 +9551,7 @@ input:focus-visible,
   color: #fff;
 }
 
+
 ----- END FILE: src/styles/global.css -----
 
 ----- BEGIN FILE: src/styles/reset.css -----
@@ -7183,6 +9628,7 @@ h4 {
 #root {
   isolation: isolate;
 }
+
 
 ----- END FILE: src/styles/reset.css -----
 
@@ -7328,22 +9774,6 @@ h4 {
   }
 }
 
+
 ----- END FILE: src/styles/tokens.css -----
 
------ BEGIN FILE: package.json (dependencies to ensure) -----
-Ensure these packages are installed (versions or newer compatible):
-  "react": "^19.2.0",
-  "react-dom": "^19.2.0",
-  "@tanstack/react-router": "^1.170.16",
-  "@tanstack/react-start": "^1.168.26",
-  "@tanstack/router-plugin": "^1.168.18",
-  "framer-motion": "^12.42.2",
-  "tailwindcss": "^4.2.1",
-  "@tailwindcss/vite": "^4.2.1",
-  "clsx": "^2.1.1",
-  "tailwind-merge": "^3.5.0",
-  "vite": "^7 or ^8",
-  "typescript": "^5.8"
------ END FILE: package.json -----
-
-END OF PROMPT. Building all files above verbatim yields the exact CryptoWave site.
