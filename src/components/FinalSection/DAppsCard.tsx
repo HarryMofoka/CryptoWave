@@ -23,9 +23,6 @@ export function DAppsCard({ onOpenDApps }: DAppsCardProps) {
 
       <div className={styles.header}>
         <h3 className={styles.heading}>DApps</h3>
-        <span className={styles.badge} style={{ background: "rgba(245, 158, 11, 0.2)", color: "#f59e0b" }}>
-          5,000+ Verified
-        </span>
       </div>
 
       <p className={styles.lede}>Take control of your crypto assets fast and secure</p>

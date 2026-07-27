@@ -1,0 +1,221 @@
+.root {
+  position: relative;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border-panel);
+  padding-top: clamp(48px, 5vw, 80px);
+  padding-bottom: clamp(36px, 4vw, 56px);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+.glow {
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 250px;
+  background: radial-gradient(circle, rgba(246, 176, 60, 0.06) 0%, rgba(0, 0, 0, 0) 70%);
+  pointer-events: none;
+}
+
+.container {
+  max-width: var(--page-max-width);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(32px, 4vw, 56px);
+  margin-bottom: clamp(40px, 4vw, 64px);
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.brandTitle {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.brandDesc {
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-normal);
+  color: var(--color-text-secondary);
+  margin-bottom: 20px;
+  max-width: 32ch;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-default);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-gold);
+  font-weight: 500;
+}
+
+.statusDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  box-shadow: 0 0 8px var(--color-gold);
+}
+
+.colHeading {
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  margin-bottom: 18px;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linkItem {
+  font-size: var(--fs-body-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.linkItem:hover {
+  color: var(--color-text-primary);
+}
+
+.newsletterDesc {
+  font-size: var(--fs-body-sm);
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+  line-height: var(--lh-normal);
+}
+
+.subscribeForm {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.inputGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.emailInput {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-sm);
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-out);
+}
+
+.emailInput:focus {
+  border-color: var(--color-gold);
+}
+
+.subscribeBtn {
+  padding: 10px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  border: none;
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-button);
+  cursor: pointer;
+}
+
+.subscribedNotice {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--color-gold);
+  margin-top: 4px;
+}
+
+.divider {
+  height: 1px;
+  background: var(--color-border-subtle);
+  margin-bottom: 28px;
+}
+
+.bottomBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: var(--fs-caption);
+  color: var(--color-text-tertiary);
+}
+
+.legalLinks {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.legalLink {
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-out);
+}
+
+.legalLink:hover {
+  color: var(--color-text-secondary);
+}
+
+.scrollTopBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border-default);
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 12px;
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+
+.scrollTopBtn:hover {
+  background: var(--color-surface-3);
+}

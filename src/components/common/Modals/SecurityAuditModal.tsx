@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SafeBrowserIcon } from "../../icons";
+import styles from "./SecurityAuditModal.module.css";
 
 interface SecurityAuditModalProps {
   isOpen: boolean;
@@ -11,7 +12,7 @@ const AUDIT_STEPS = [
   "Auditing AES-256 Cloud Vault Keys...",
   "Scanning Smart Contract Permissions...",
   "Verifying Zero-Knowledge Proof Shields...",
-  "Checking Multi-Sig Transaction Signatures...",
+  "Checking Multi-Sig Signatures...",
   "Audit Complete: 100% Secure & Compliant",
 ];
 
@@ -35,103 +36,63 @@ export function SecurityAuditModal({ isOpen, onClose }: SecurityAuditModalProps)
           return prev;
         }
       });
-    }, 800);
+    }, 700);
     return () => clearInterval(interval);
   }, [isOpen]);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div className={styles.backdrop}>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{ position: "absolute", inset: 0, background: "rgba(0, 0, 0, 0.75)", backdropFilter: "blur(12px)" }}
+            className={styles.overlay}
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
             transition={{ type: "spring", stiffness: 350, damping: 28 }}
-            style={{
-              position: "relative",
-              width: "100%",
-              maxWidth: "460px",
-              background: "rgba(18, 20, 26, 0.95)",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
-              borderRadius: "24px",
-              padding: "26px",
-              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.6)",
-              zIndex: 10,
-              color: "#fff",
-              fontFamily: "Inter, sans-serif",
-            }}
+            className={styles.modal}
           >
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, #10b981, #059669)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className={styles.header}>
+              <div className={styles.headerTitleWrap}>
+                <div className={styles.headerIcon}>
                   <SafeBrowserIcon size={22} />
                 </div>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 600 }}>Proactive Security Scanner</h3>
-                  <span style={{ fontSize: "0.78rem", color: "#9ca3af" }}>Encrypted On-Chain Diagnostics</span>
+                  <h3 className={styles.title}>Security Diagnostics</h3>
+                  <span className={styles.subtitle}>On-Chain Contract & Vault Audit</span>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                style={{ background: "rgba(255, 255, 255, 0.08)", border: "none", borderRadius: "50%", width: "30px", height: "30px", color: "#9ca3af", cursor: "pointer" }}
-              >
+              <button type="button" onClick={onClose} className={styles.closeBtn}>
                 &times;
               </button>
             </div>
 
-            {/* Score Display */}
-            <div style={{ textAlign: "center", padding: "20px", background: "rgba(16, 185, 129, 0.08)", border: "1px solid rgba(16, 185, 129, 0.2)", borderRadius: "18px", marginBottom: "18px" }}>
-              <div style={{ fontSize: "2.4rem", fontWeight: 800, color: "#10b981", letterSpacing: "-1px" }}>
+            <div className={styles.scoreCard}>
+              <div className={styles.scoreNumber}>
                 {isDone ? "100 / 100" : `${Math.round(((currentStep + 1) / AUDIT_STEPS.length) * 100)}%`}
               </div>
-              <div style={{ fontSize: "0.82rem", color: "#d1d5db", marginTop: "4px" }}>
-                {isDone ? "Shield Status: Fully Protected" : "Running Deep Cryptographic Inspection..."}
+              <div className={styles.scoreStatus}>
+                {isDone ? "Shield Status: Fully Protected" : "Running Deep Security Inspection..."}
               </div>
             </div>
 
-            {/* Audit Checklist */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className={styles.stepList}>
               {AUDIT_STEPS.map((stepText, idx) => {
                 const isPassed = idx <= currentStep;
-                const isCurrent = idx === currentStep && !isDone;
                 return (
                   <div
                     key={stepText}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      fontSize: "0.85rem",
-                      color: isPassed ? "#fff" : "#4b5563",
-                      transition: "all 0.3s ease",
-                    }}
+                    className={`${styles.stepItem} ${isPassed ? styles.stepActive : ""}`}
                   >
-                    <span
-                      style={{
-                        width: "20px",
-                        height: "20px",
-                        borderRadius: "50%",
-                        background: isPassed ? (isCurrent ? "#f59e0b" : "#10b981") : "rgba(255, 255, 255, 0.1)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: "0.75rem",
-                        fontWeight: 700,
-                        color: isPassed ? "#000" : "#9ca3af",
-                      }}
-                    >
-                      {isPassed ? (isCurrent ? "⏳" : "✓") : idx + 1}
+                    <span className={`${styles.stepBadge} ${isPassed ? styles.stepBadgePassed : ""}`}>
+                      {isPassed ? "✓" : idx + 1}
                     </span>
                     <span>{stepText}</span>
                   </div>
@@ -139,23 +100,12 @@ export function SecurityAuditModal({ isOpen, onClose }: SecurityAuditModalProps)
               })}
             </div>
 
-            {/* Action Button */}
             <motion.button
               type="button"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onClose}
-              style={{
-                marginTop: "20px",
-                width: "100%",
-                padding: "12px",
-                borderRadius: "14px",
-                background: "linear-gradient(135deg, #10b981, #059669)",
-                border: "none",
-                color: "#fff",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
+              className={styles.actionBtn}
             >
               {isDone ? "Close Security Report" : "Inspecting Vault..."}
             </motion.button>

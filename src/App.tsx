@@ -30,7 +30,7 @@ function App() {
   };
 
   return (
-    <div style={{ background: "#0c0d12", minHeight: "100vh", color: "#fff" }}>
+    <div>
       <main>
         <HeroFeatureSection
           onOpenWalletModal={() => setWalletModalOpen(true)}
@@ -70,7 +70,7 @@ function App() {
       <DAppBrowserModal
         isOpen={dappsModalOpen}
         onClose={() => setDappsModalOpen(false)}
-        onLaunch={(name) => showToast(`Launched ${name} in Secure Browser Sandbox`)}
+        onLaunch={(name) => showToast(`Launched ${name} in Sandbox`)}
       />
 
       {/* Toast Notification */}

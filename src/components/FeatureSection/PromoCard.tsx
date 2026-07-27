@@ -8,8 +8,6 @@ import { SquiggleConnectorIcon } from "./SquiggleConnectorIcon";
 import { Web3CardStack } from "./Web3CardStack";
 import styles from "./PromoCard.module.css";
 
-const avatarUrl = "https://qclay.design/lovable/crypto/avatar.png";
-
 const footerReveal = {
   initial: { opacity: 0, y: 28 },
   whileInView: { opacity: 1, y: 0 },
@@ -88,15 +86,6 @@ export function PromoCard({ onOpenSwap, onOpenAudit, onOpenDApps }: PromoCardPro
       {/* Footer Navigation */}
       <motion.div className={styles.footer} {...footerReveal}>
         <div className={styles.chain}>
-          <img
-            className={styles.avatar}
-            src={avatarUrl}
-            width={54}
-            height={54}
-            alt="Connected account avatar"
-            loading="lazy"
-            decoding="async"
-          />
           <SquiggleConnectorIcon className={styles.squiggle} />
           <LightningLogoMark size={42} />
         </div>

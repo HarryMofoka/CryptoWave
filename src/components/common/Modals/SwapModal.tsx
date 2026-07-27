@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SwapArrowsIcon } from "../../icons";
+import styles from "./SwapModal.module.css";
 
 interface SwapModalProps {
   isOpen: boolean;
@@ -36,201 +37,134 @@ export function SwapModal({ isOpen, onClose, onSuccess }: SwapModalProps) {
     setTimeout(() => {
       setSwapping(false);
       if (onSuccess) {
-        onSuccess(`Successfully swapped ${fromAmount} ${fromToken.symbol} to ${calculatedToAmount} ${toToken.symbol}!`);
+        onSuccess(`Swapped ${fromAmount} ${fromToken.symbol} → ${calculatedToAmount} ${toToken.symbol}`);
       }
       onClose();
-    }, 1500);
+    }, 1200);
   };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+        <div className={styles.backdrop}>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            style={{ position: "absolute", inset: 0, background: "rgba(0, 0, 0, 0.78)", backdropFilter: "blur(12px)" }}
+            className={styles.overlay}
           />
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 20 }}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 20 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
             transition={{ type: "spring", stiffness: 350, damping: 28 }}
-            style={{
-              position: "relative",
-              width: "100%",
-              maxWidth: "440px",
-              background: "rgba(18, 20, 26, 0.95)",
-              border: "1px solid rgba(255, 255, 255, 0.12)",
-              borderRadius: "24px",
-              padding: "24px",
-              boxShadow: "0 25px 60px rgba(0, 0, 0, 0.6)",
-              zIndex: 10,
-              color: "#fff",
-              fontFamily: "Inter, sans-serif",
-            }}
+            className={styles.modal}
           >
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "12px", background: "linear-gradient(135deg, #3b82f6, #6366f1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className={styles.header}>
+              <div className={styles.headerTitleWrap}>
+                <div className={styles.headerIcon}>
                   <SwapArrowsIcon size={20} />
                 </div>
-                <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 600 }}>Instant Multi-Chain Swap</h3>
+                <h3 className={styles.title}>Cross-Chain Swap</h3>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                style={{ background: "rgba(255, 255, 255, 0.08)", border: "none", borderRadius: "50%", width: "30px", height: "30px", color: "#9ca3af", cursor: "pointer" }}
-              >
+              <button type="button" onClick={onClose} className={styles.closeBtn}>
                 &times;
               </button>
             </div>
 
-            {/* From Token Input */}
-            <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "18px", padding: "14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#9ca3af", marginBottom: "6px" }}>
+            {/* From Token */}
+            <div className={styles.tokenCard}>
+              <div className={styles.cardHeader}>
                 <span>You Pay</span>
-                <span>Balance: {fromToken.balance} {fromToken.symbol}</span>
+                <span>Bal: {fromToken.balance} {fromToken.symbol}</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+              <div className={styles.inputRow}>
                 <input
                   type="number"
                   value={fromAmount}
                   onChange={(e) => setFromAmount(e.target.value)}
-                  style={{
-                    width: "100%",
-                    background: "transparent",
-                    border: "none",
-                    outline: "none",
-                    color: "#fff",
-                    fontSize: "1.4rem",
-                    fontWeight: 700,
-                  }}
+                  className={styles.amountInput}
                   placeholder="0.0"
                 />
                 <select
                   value={fromToken.symbol}
                   onChange={(e) => setFromToken(TOKENS.find((t) => t.symbol === e.target.value) || TOKENS[0])}
-                  style={{
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    borderRadius: "12px",
-                    color: "#fff",
-                    padding: "6px 12px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    outline: "none",
-                  }}
+                  className={styles.tokenSelect}
                 >
                   {TOKENS.map((t) => (
-                    <option key={t.symbol} value={t.symbol} style={{ background: "#12141a", color: "#fff" }}>
+                    <option key={t.symbol} value={t.symbol} className={styles.tokenOption}>
                       {t.symbol}
                     </option>
                   ))}
                 </select>
               </div>
-              <div style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "4px" }}>
+              <div className={styles.usdValue}>
                 ≈ ${(numAmount * fromToken.price).toLocaleString("en-US", { minimumFractionDigits: 2 })} USD
               </div>
             </div>
 
-            {/* Swap Direction Toggle Button */}
-            <div style={{ display: "flex", justifyContent: "center", margin: "-10px 0", position: "relative", zIndex: 2 }}>
+            {/* Swap Button */}
+            <div className={styles.swapToggleWrap}>
               <motion.button
                 type="button"
                 whileHover={{ scale: 1.1, rotate: 180 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={handleSwapTokens}
-                style={{
-                  background: "linear-gradient(135deg, #f59e0b, #eab308)",
-                  border: "3px solid #12141a",
-                  borderRadius: "50%",
-                  width: "36px",
-                  height: "36px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                  color: "#000",
-                  boxShadow: "0 4px 12px rgba(245, 158, 11, 0.4)",
-                }}
+                className={styles.swapToggleBtn}
               >
                 &uarr;&darr;
               </motion.button>
             </div>
 
-            {/* To Token Output */}
-            <div style={{ background: "rgba(255, 255, 255, 0.04)", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "18px", padding: "14px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.78rem", color: "#9ca3af", marginBottom: "6px" }}>
-                <span>You Receive (Estimated)</span>
-                <span>Balance: {toToken.balance} {toToken.symbol}</span>
+            {/* To Token */}
+            <div className={styles.tokenCard}>
+              <div className={styles.cardHeader}>
+                <span>You Receive</span>
+                <span>Bal: {toToken.balance} {toToken.symbol}</span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
-                <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#f59e0b" }}>{calculatedToAmount}</div>
+              <div className={styles.inputRow}>
+                <div className={styles.calculatedValue}>{calculatedToAmount}</div>
                 <select
                   value={toToken.symbol}
                   onChange={(e) => setToToken(TOKENS.find((t) => t.symbol === e.target.value) || TOKENS[1])}
-                  style={{
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.15)",
-                    borderRadius: "12px",
-                    color: "#fff",
-                    padding: "6px 12px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    outline: "none",
-                  }}
+                  className={styles.tokenSelect}
                 >
                   {TOKENS.map((t) => (
-                    <option key={t.symbol} value={t.symbol} style={{ background: "#12141a", color: "#fff" }}>
+                    <option key={t.symbol} value={t.symbol} className={styles.tokenOption}>
                       {t.symbol}
                     </option>
                   ))}
                 </select>
               </div>
-              <div style={{ fontSize: "0.75rem", color: "#6b7280", marginTop: "4px" }}>
+              <div className={styles.usdValue}>
                 1 {fromToken.symbol} = {(fromToken.price / toToken.price).toFixed(4)} {toToken.symbol}
               </div>
             </div>
 
-            {/* Swap Rate Details */}
-            <div style={{ marginTop: "14px", padding: "10px 12px", borderRadius: "12px", background: "rgba(255, 255, 255, 0.02)", fontSize: "0.78rem", color: "#9ca3af" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                <span>Network Slippage Tolerance</span>
-                <span style={{ color: "#10b981", fontWeight: 600 }}>0.1% (Auto)</span>
+            {/* Rate Info */}
+            <div className={styles.rateCard}>
+              <div className={styles.rateRow}>
+                <span>Slippage Tolerance</span>
+                <span className={styles.rateHighlight}>0.1%</span>
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span>Estimated Gas Fee</span>
-                <span>~$0.45 (0.05%)</span>
+              <div className={styles.rateRow}>
+                <span>Protocol Fee</span>
+                <span>0.05%</span>
               </div>
             </div>
 
-            {/* Execute Button */}
+            {/* Action */}
             <motion.button
               type="button"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleExecuteSwap}
               disabled={swapping || numAmount <= 0}
-              style={{
-                marginTop: "18px",
-                width: "100%",
-                padding: "14px",
-                borderRadius: "16px",
-                background: swapping ? "#4b5563" : "linear-gradient(135deg, #f59e0b, #d97706)",
-                border: "none",
-                color: "#000",
-                fontWeight: 700,
-                fontSize: "1rem",
-                cursor: swapping ? "wait" : "pointer",
-                boxShadow: "0 8px 20px rgba(245, 158, 11, 0.3)",
-              }}
+              className={`${styles.submitBtn} ${swapping || numAmount <= 0 ? styles.submitBtnDisabled : ""}`}
             >
-              {swapping ? "Processing On-Chain Swap..." : `Confirm Swap (${fromToken.symbol} → ${toToken.symbol})`}
+              {swapping ? "Executing Swap..." : `Confirm Swap (${fromToken.symbol} → ${toToken.symbol})`}
             </motion.button>
           </motion.div>
         </div>

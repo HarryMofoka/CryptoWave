@@ -16,20 +16,20 @@
   top: 0;
   left: 0;
   width: 100%;
-  padding: 20px;
-  border-radius: 20px;
-  background: rgba(26, 28, 36, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: clamp(16px, 2vw, 22px);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-panel);
   backdrop-filter: blur(20px);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-card);
   cursor: pointer;
   user-select: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color var(--duration-base) var(--ease-out), box-shadow var(--duration-base) var(--ease-out);
 }
 
 .cardActive {
-  border-color: rgba(245, 158, 11, 0.4);
-  box-shadow: 0 20px 50px rgba(245, 158, 11, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-panel);
 }
 
 .cardHeader {
@@ -42,31 +42,32 @@
 .cardTitleWrap {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .cardIcon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
 }
 
 .cardTitle {
   margin: 0;
+  font-family: var(--font-display);
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--color-text-primary, #ffffff);
+  color: var(--color-text-primary);
 }
 
 .cardSubtitle {
   margin: 0 0 14px 0;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--color-text-secondary, #9ca3af);
+  font-size: var(--fs-body-sm);
+  line-height: var(--lh-normal);
+  color: var(--color-text-secondary);
 }
 
 .badgeRow {
@@ -78,19 +79,20 @@
 
 .badge {
   padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  background: rgba(255, 255, 255, 0.08);
-  color: #e5e7eb;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide);
+  background: var(--color-surface-1);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-subtle);
 }
 
 .badgeGold {
-  background: rgba(245, 158, 11, 0.15);
-  color: #f59e0b;
-  border-color: rgba(245, 158, 11, 0.3);
+  background: var(--color-surface-2);
+  color: var(--color-gold);
+  border-color: var(--color-border-default);
 }
 
 .actionBtn {
@@ -98,17 +100,17 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #000000;
-  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+  background: var(--gradient-accent-diagonal);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
   font-weight: 700;
   border: none;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform var(--duration-fast) var(--ease-out);
 }
 
 .actionBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }

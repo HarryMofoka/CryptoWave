@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
+import { BitcoinIcon, SafeBrowserIcon, CubeIcon } from "../icons";
 import styles from "./Web3CardStack.module.css";
 
 export interface StackCardItem {
   id: string;
   title: string;
   subtitle: string;
-  icon: string;
+  icon: React.ReactNode;
   iconBg: string;
   badges: string[];
   actionLabel: string;
@@ -16,8 +17,8 @@ export const STACK_CARDS: StackCardItem[] = [
     id: "swap",
     title: "Instant Cross-Chain Swaps",
     subtitle: "Swap 1,000+ assets across Bitcoin, Solana, Ethereum & Polygon with zero price slippage.",
-    icon: "⚡",
-    iconBg: "linear-gradient(135deg, #f59e0b, #d97706)",
+    icon: <BitcoinIcon size={20} />,
+    iconBg: "var(--gradient-accent-diagonal)",
     badges: ["0.05% Fee", "15+ Chains", "Instant"],
     actionLabel: "Launch Swap",
   },
@@ -25,17 +26,17 @@ export const STACK_CARDS: StackCardItem[] = [
     id: "vault",
     title: "Self-Custodial Multi-Sig Vault",
     subtitle: "AES-256 cloud key recovery with biometric passkey & hardware security authorization.",
-    icon: "🛡️",
-    iconBg: "linear-gradient(135deg, #10b981, #059669)",
+    icon: <SafeBrowserIcon size={20} />,
+    iconBg: "var(--gradient-accent-diagonal)",
     badges: ["AES-256", "Multi-Sig", "0 Gas"],
     actionLabel: "Security Audit",
   },
   {
     id: "dapps",
-    title: "5,000+ Integrated Web3 dApps",
+    title: "Integrated Web3 dApps",
     subtitle: "1-tap connection to top audited liquidity pools, NFTs, and decentralized governance DAOs.",
-    icon: "🌐",
-    iconBg: "linear-gradient(135deg, #ec4899, #8b5cf6)",
+    icon: <CubeIcon size={20} />,
+    iconBg: "var(--gradient-accent-diagonal)",
     badges: ["DeFi", "NFTs", "1-Click"],
     actionLabel: "Explore dApps",
   },
@@ -52,11 +53,9 @@ export function Web3CardStack({ activeIndex, onSelectIndex, onActionClick }: Web
     <div className={styles.container}>
       <div className={styles.stackWrapper}>
         {STACK_CARDS.map((card, index) => {
-          // Calculate offset position relative to active index
           const offset = (index - activeIndex + STACK_CARDS.length) % STACK_CARDS.length;
           const isActive = offset === 0;
 
-          // Compute 3D transformation properties based on stack depth
           const translateY = offset * 14;
           const scale = 1 - offset * 0.05;
           const zIndex = STACK_CARDS.length - offset;
@@ -82,7 +81,7 @@ export function Web3CardStack({ activeIndex, onSelectIndex, onActionClick }: Web
             >
               <div className={styles.cardHeader}>
                 <div className={styles.cardTitleWrap}>
-                  <div className={styles.cardIcon} style={{ background: card.iconBg }}>
+                  <div className={styles.cardIcon} style={{ background: card.iconBg, color: "var(--color-text-on-accent)" }}>
                     {card.icon}
                   </div>
                   <h4 className={styles.cardTitle}>{card.title}</h4>
@@ -91,8 +90,8 @@ export function Web3CardStack({ activeIndex, onSelectIndex, onActionClick }: Web
                 {isActive && (
                   <motion.button
                     type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
                     className={styles.actionBtn}
                     onClick={(e) => {
                       e.stopPropagation();
