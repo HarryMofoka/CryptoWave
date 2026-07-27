@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-const avatarUrl = "https://qclay.design/lovable/crypto/avatar.png";
 import { ChevronRightIcon, GrayBitcoinIcon, LightningLogoMark } from "../icons";
 import { Reveal } from "../common/motion";
 import { TextScramble } from "../common/TextScramble";
 import { SIGNATURE_EASE } from "../common/motionConfig";
 import { SquiggleConnectorIcon } from "./SquiggleConnectorIcon";
+import { Web3CardStack } from "./Web3CardStack";
 import styles from "./PromoCard.module.css";
+
+const avatarUrl = "https://qclay.design/lovable/crypto/avatar.png";
 
 const footerReveal = {
   initial: { opacity: 0, y: 28 },
@@ -14,7 +17,25 @@ const footerReveal = {
   transition: { duration: 0.5, delay: 0.75, ease: SIGNATURE_EASE },
 };
 
-export function PromoCard() {
+interface PromoCardProps {
+  onOpenSwap?: () => void;
+  onOpenAudit?: () => void;
+  onOpenDApps?: () => void;
+}
+
+export function PromoCard({ onOpenSwap, onOpenAudit, onOpenDApps }: PromoCardProps) {
+  const [activeStackIndex, setActiveStackIndex] = useState(0);
+
+  const handleNextStack = () => {
+    setActiveStackIndex((prev) => (prev + 1) % 3);
+  };
+
+  const handleActionClick = (cardId: string) => {
+    if (cardId === "swap" && onOpenSwap) onOpenSwap();
+    else if (cardId === "vault" && onOpenAudit) onOpenAudit();
+    else if (cardId === "dapps" && onOpenDApps) onOpenDApps();
+  };
+
   return (
     <motion.div
       className={styles.root}
@@ -38,14 +59,33 @@ export function PromoCard() {
         <p className={styles.lede}>Leading self-custody multi-chain platform assets</p>
       </Reveal>
 
+      {/* Interactive 3D Card Stack */}
+      <Reveal variant="fade-up" duration={0.5} delay={0.6}>
+        <Web3CardStack
+          activeIndex={activeStackIndex}
+          onSelectIndex={(idx) => setActiveStackIndex(idx)}
+          onActionClick={handleActionClick}
+        />
+      </Reveal>
+
+      {/* Progress Bar Segments */}
       <Reveal variant="fade-up" duration={0.5} delay={0.65}>
-        <div className={styles.progress} role="presentation">
-          <span className={`${styles.progressSegment} ${styles.progressActive}`} />
-          <span className={styles.progressSegment} />
-          <span className={styles.progressSegment} />
+        <div className={styles.progress} role="tablist" aria-label="Feature card pagination">
+          {[0, 1, 2].map((idx) => (
+            <button
+              key={idx}
+              type="button"
+              role="tab"
+              aria-selected={activeStackIndex === idx}
+              onClick={() => setActiveStackIndex(idx)}
+              className={`${styles.progressSegment} ${activeStackIndex === idx ? styles.progressActive : ""}`}
+              style={{ cursor: "pointer", border: "none", outline: "none" }}
+            />
+          ))}
         </div>
       </Reveal>
 
+      {/* Footer Navigation */}
       <motion.div className={styles.footer} {...footerReveal}>
         <div className={styles.chain}>
           <img
@@ -61,7 +101,12 @@ export function PromoCard() {
           <LightningLogoMark size={42} />
         </div>
 
-        <button type="button" className={styles.next} aria-label="Next">
+        <button
+          type="button"
+          className={styles.next}
+          aria-label="Next feature card"
+          onClick={handleNextStack}
+        >
           <ChevronRightIcon size={16} />
         </button>
       </motion.div>

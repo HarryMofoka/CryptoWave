@@ -4,19 +4,18 @@ import styles from "./TexturedFabButton.module.css";
 interface TexturedFabButtonProps {
   label?: string;
   className?: string;
+  onClick?: () => void;
 }
 
-/**
- * The tilted, textured circular button (abstract-design.svg background,
- * thick dark border, inset highlight) - originally the hero's "quick
- * actions" button, reused wherever that same treatment is needed (e.g. the
- * wallet card's corner action button) instead of duplicating the styling.
- */
-export function TexturedFabButton({ label = "Quick actions", className }: TexturedFabButtonProps) {
+export function TexturedFabButton({ label = "Quick actions", className, onClick }: TexturedFabButtonProps) {
   return (
-    <button type="button" className={`${styles.fab} ${className ?? ""}`} aria-label={label}>
+    <button
+      type="button"
+      className={`${styles.fab} ${className ?? ""}`}
+      aria-label={label}
+      onClick={onClick}
+    >
       <SparkleIcon size={22} />
     </button>
   );
 }
-

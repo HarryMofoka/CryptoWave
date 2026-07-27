@@ -28,18 +28,33 @@ const bottomRow: SwapIcon[] = [
   { src: `${base}/ripple-x.svg`, alt: "Ripple", size: "md" },
 ];
 
-export function SwapCard() {
+interface SwapCardProps {
+  onOpenSwap?: () => void;
+}
+
+export function SwapCard({ onOpenSwap }: SwapCardProps) {
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 0.2 }}
+      onClick={onOpenSwap}
+      style={{ cursor: "pointer" }}
     >
       <div className={styles.header}>
         <h3 className={styles.heading}>Buy, sell, and Swap</h3>
-        <button type="button" className={styles.cursorBtn} aria-label="Cursor">
+        <button
+          type="button"
+          className={styles.cursorBtn}
+          aria-label="Launch Swap"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onOpenSwap) onOpenSwap();
+          }}
+        >
           <CursorIcon size={16} />
         </button>
       </div>
@@ -52,6 +67,7 @@ export function SwapCard() {
               className={`${styles.iconWrap} ${styles[`iconWrap${icon.size === "sm" ? "Sm" : icon.size === "lg" ? "Lg" : "Md"}`]}`}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.25, rotate: 12 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.5, ease: SIGNATURE_EASE, delay: 0.9 + index * 0.08 }}
             >
@@ -69,6 +85,7 @@ export function SwapCard() {
                 className={`${styles.iconWrap} ${isOuter ? styles.iconWrapBottomOuter : styles.iconWrapBottomMid}`}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
+                whileHover={{ scale: 1.25, rotate: -12 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.5, ease: SIGNATURE_EASE, delay: 1.3 + index * 0.08 }}
               >

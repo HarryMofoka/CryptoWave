@@ -12,14 +12,13 @@ interface BalanceCardProps {
   address?: string;
   actionIcon?: ReactNode;
   actionLabel?: string;
-  /** Overrides the action button's default size, e.g. "clamp(38px, 3.4vw, 44px)". */
   actionButtonSize?: string;
   showBadges?: boolean;
-  /** Delay (seconds) before the overlap badges (coins + connector lines) start animating in. */
   badgesDelay?: number;
   cornerButton?: ReactNode;
-  /** Overrides the corner button's default inset (right/bottom), e.g. "clamp(-8px, -0.6vw, -4px)". */
   cornerButtonInset?: string;
+  onOpenSwap?: () => void;
+  onOpenWallet?: () => void;
 }
 
 export function BalanceCard({
@@ -33,7 +32,17 @@ export function BalanceCard({
   badgesDelay = 0,
   cornerButton,
   cornerButtonInset,
+  onOpenSwap,
+  onOpenWallet,
 }: BalanceCardProps) {
+  const handleAction = () => {
+    if (actionLabel.toLowerCase().includes("menu") || actionLabel.toLowerCase().includes("wallet")) {
+      if (onOpenWallet) onOpenWallet();
+    } else {
+      if (onOpenSwap) onOpenSwap();
+    }
+  };
+
   return (
     <div className={styles.root}>
       <div className={styles.glowMask} aria-hidden="true">
@@ -49,13 +58,14 @@ export function BalanceCard({
           type="button"
           className={styles.sparkleBtn}
           aria-label={actionLabel}
+          onClick={handleAction}
           style={actionButtonSize ? ({ "--action-btn-size": actionButtonSize } as CSSProperties) : undefined}
         >
           {actionIcon ?? <RippleXIcon size={17} />}
         </button>
       </div>
 
-      <div className={styles.addressField}>
+      <div className={styles.addressField} onClick={onOpenWallet} style={{ cursor: "pointer" }}>
         <span className={styles.addressLabel}>Wallet address</span>
         <span className={styles.addressValue}>{address}</span>
       </div>

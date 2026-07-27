@@ -10,21 +10,27 @@ import { SecurityWaveBadgeIcon } from "./SecurityWaveBadgeIcon";
 import { WaveRings } from "./WaveRings";
 import styles from "./SecurityCard.module.css";
 
-export function SecurityCard() {
+interface SecurityCardProps {
+  onOpenAudit?: () => void;
+}
+
+export function SecurityCard({ onOpenAudit }: SecurityCardProps) {
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -4, scale: 1.01 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: SIGNATURE_EASE }}
+      id="security"
     >
-      <OrbitNavButton direction="next" className={styles.edgeNav} />
+      <OrbitNavButton direction="next" className={styles.edgeNav} onClick={onOpenAudit} />
 
       <div className={styles.surface}>
         <WaveRings className={styles.waveRings} />
 
-        <div className={styles.waveBadgeCol}>
+        <div className={styles.waveBadgeCol} onClick={onOpenAudit} style={{ cursor: "pointer" }}>
           <span className={styles.waveBadgeWrap}>
             <SecurityWaveBadgeIcon size={82} className={styles.waveBadge} />
           </span>
@@ -42,7 +48,6 @@ export function SecurityCard() {
 
         <div className={styles.deployFeed}>
           <div className={styles.deployCard}>
-            {/* Cursor + Try Now button start near headline, glide to center, hang 0.5s, then land on DeployCard */}
             <motion.div
               className={styles.tryNowWrap}
               initial={{ opacity: 0, x: -280, y: -110, scale: 0.85 }}
@@ -56,23 +61,28 @@ export function SecurityCard() {
               transition={{ duration: 1.75, times: [0, 0.35, 0.63, 1], delay: 0.3, ease: "easeInOut" }}
             >
               <YellowCursorIcon size={16} className={styles.tryNowCursor} />
-              <button type="button" className={styles.tryNow}>
+              <button
+                type="button"
+                className={styles.tryNow}
+                onClick={onOpenAudit}
+                style={{ cursor: "pointer" }}
+              >
                 Try Now
               </button>
             </motion.div>
 
             <div className={styles.deployMeta}>
               <span className={styles.deployRepo}>
-                vercel-site/<strong>jvjb4ynna</strong>
+                cryptowave/<strong>vault-v3</strong>
               </span>
               <span className={styles.deployTime}>1d ago</span>
             </div>
             <div className={styles.deployBody}>
               <span className={styles.deployCommit}>
                 <CommitDotIcon className={styles.commitIcon} />
-                ba5f5ff Update bento box design
+                ba5f5ff AES-256 Cloud Encryption Audit
               </span>
-              <ProgressRing value={90} size={30} />
+              <ProgressRing value={100} size={30} />
             </div>
           </div>
 
@@ -84,22 +94,22 @@ export function SecurityCard() {
           <div className={`${styles.deployCard} ${styles.deployCardSecond}`}>
             <div className={styles.deployMeta}>
               <span className={styles.deployRepo}>
-                vercel-site/<strong>gigj178vp</strong>
+                cryptowave/<strong>multi-sig</strong>
               </span>
               <span className={styles.deployTime}>10m ago</span>
             </div>
             <div className={styles.deployBodyEnd}>
-              <ProgressRing value={55} size={30} />
+              <ProgressRing value={95} size={30} />
             </div>
           </div>
         </div>
 
         <div className={styles.footer}>
-          <button type="button" className={styles.footerBtn}>
+          <button type="button" className={styles.footerBtn} onClick={onOpenAudit}>
             <CommunityIcon size={18} className={styles.footerBtnIcon} />
-            Create community
+            Run Security Audit
           </button>
-          <button type="button" className={styles.footerBtn}>
+          <button type="button" className={styles.footerBtn} onClick={onOpenAudit}>
             <SafeBrowserIcon size={18} className={styles.footerBtnIcon} />
             Safe Browser
           </button>

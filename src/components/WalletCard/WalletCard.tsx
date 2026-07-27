@@ -21,23 +21,16 @@ interface WalletCardProps {
   showStageBackground?: boolean;
   cornerButton?: ReactNode;
   cornerButtonInset?: string;
+  onOpenSwap?: () => void;
+  onOpenWallet?: () => void;
 }
 
-/** Smooth, no-overshoot ease - monotonic, gentle deceleration, no bounce. */
 const SMOOTH_EASE = [0.22, 1, 0.36, 1] as const;
 
 const STAR_COUNT = 42;
 const STAR_STAGGER = 0.012;
 const STAR_DURATION = 0.35;
 
-/**
- * Build-up sequence, computed as a running "cursor" through time. The
- * panel background is a hard gate: it is not there, then it fully
- * finishes fading in, and only then does anything start drawing inside
- * it (no overlap for that one step - every later step is allowed to
- * start partway through the previous one, which is what keeps the whole
- * sequence feeling continuous instead of a series of separate pauses).
- */
 function useRevealTiming({ showHeader, showStageBackground }: { showHeader: boolean; showStageBackground: boolean }) {
   const panelFadeDuration = 0.45;
   let t = panelFadeDuration;
@@ -83,6 +76,8 @@ export function WalletCard({
   showStageBackground = true,
   cornerButton,
   cornerButtonInset,
+  onOpenSwap,
+  onOpenWallet,
 }: WalletCardProps = {}) {
   const timing = useRevealTiming({ showHeader, showStageBackground });
 
@@ -91,6 +86,7 @@ export function WalletCard({
       className={styles.panel}
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -4, scale: 1.01 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: SMOOTH_EASE }}
     >
@@ -126,6 +122,8 @@ export function WalletCard({
             badgesDelay={timing.badgesDelay}
             cornerButton={cornerButton}
             cornerButtonInset={cornerButtonInset}
+            onOpenSwap={onOpenSwap}
+            onOpenWallet={onOpenWallet}
           />
         </motion.div>
       </div>

@@ -4,7 +4,17 @@ import { SecurityCard } from "./SecurityCard";
 import { SwapCard } from "./SwapCard";
 import styles from "./FinalSection.module.css";
 
-export function FinalSection() {
+interface FinalSectionProps {
+  onOpenSwapModal?: () => void;
+  onOpenAuditModal?: () => void;
+  onOpenDAppsModal?: () => void;
+}
+
+export function FinalSection({
+  onOpenSwapModal,
+  onOpenAuditModal,
+  onOpenDAppsModal,
+}: FinalSectionProps) {
   return (
     <section className={styles.section} id="fiat-exchange">
       <div className={styles.container}>
@@ -14,10 +24,10 @@ export function FinalSection() {
           </div>
 
           <div className={styles.cardColumn}>
-            <SecurityCard />
+            <SecurityCard onOpenAudit={onOpenAuditModal} />
             <div className={styles.subGrid}>
-              <DAppsCard />
-              <SwapCard />
+              <DAppsCard onOpenDApps={onOpenDAppsModal} />
+              <SwapCard onOpenSwap={onOpenSwapModal} />
               <div className={styles.gradientOrange}></div>
               <div className={styles.gradientBlue}></div>
             </div>

@@ -3,20 +3,29 @@ import { OrbitNavButton } from "../OrbitSection/OrbitNavButton";
 import { SIGNATURE_EASE } from "../common/motionConfig";
 import styles from "./DAppsCard.module.css";
 
-export function DAppsCard() {
+interface DAppsCardProps {
+  onOpenDApps?: () => void;
+}
+
+export function DAppsCard({ onOpenDApps }: DAppsCardProps) {
   return (
     <motion.div
       className={styles.root}
       initial={{ opacity: 0, y: 24, scale: 0.97 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       viewport={{ once: true, amount: 0.2 }}
       transition={{ duration: 0.6, ease: SIGNATURE_EASE, delay: 0.1 }}
+      onClick={onOpenDApps}
+      style={{ cursor: "pointer" }}
     >
-      <OrbitNavButton direction="prev" className={styles.edgeNav} />
+      <OrbitNavButton direction="prev" className={styles.edgeNav} onClick={onOpenDApps} />
 
       <div className={styles.header}>
         <h3 className={styles.heading}>DApps</h3>
-        <span className={styles.badge}>Coming Soon</span>
+        <span className={styles.badge} style={{ background: "rgba(245, 158, 11, 0.2)", color: "#f59e0b" }}>
+          5,000+ Verified
+        </span>
       </div>
 
       <p className={styles.lede}>Take control of your crypto assets fast and secure</p>
